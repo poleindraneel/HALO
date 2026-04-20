@@ -1,0 +1,24 @@
+n_units: 4
+n_input_dim: 256
+max_steps: 100
+seed: 42
+
+cortical:
+  n_columns: 2048
+  sparsity: 0.02
+  learning_rate: 0.1
+
+thalamic:
+  aggregation: or
+
+trn:
+  entropy_threshold: 0.5
+
+reliability:
+  initial_score: 0.5
+  alpha: 0.1
+  min_score: 0.01
+  max_score: 1.0
+
+consensus:
+  method: weighted_vote
