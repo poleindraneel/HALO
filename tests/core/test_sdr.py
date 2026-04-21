@@ -71,3 +71,32 @@ def test_overlap_length_mismatch_raises() -> None:
     b = SDR.empty(20, "b", 0)
     with pytest.raises(ValueError):
         a.overlap(b)
+
+
+# ---------------------------------------------------------------------------
+# SDR.copy — issue #1
+# ---------------------------------------------------------------------------
+
+def test_copy_bits_equal() -> None:
+    """Copied SDR has identical bit values."""
+    original = _make_sdr([0, 3, 7], n=20)
+    copied = original.copy()
+    np.testing.assert_array_equal(original.bits, copied.bits)
+
+
+def test_copy_independent_array() -> None:
+    """Mutating the copy does not affect the original."""
+    original = _make_sdr([0, 3, 7], n=20)
+    copied = original.copy()
+    assert copied.bits is not original.bits
+    copied.bits[0] = False
+    assert original.bits[0] is np.bool_(True)
+
+
+def test_copy_preserves_metadata() -> None:
+    """unit_id and timestamp are preserved in the copy."""
+    original = SDR.from_indices(np.array([1, 2]), n=10, unit_id="u_test", timestamp=42)
+    copied = original.copy()
+    assert copied.unit_id == "u_test"
+    assert copied.timestamp == 42
+
