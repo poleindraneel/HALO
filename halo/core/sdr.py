@@ -124,6 +124,19 @@ class SDR:
             timestamp=self.timestamp,
         )
 
+    def copy(self) -> "SDR":
+        """Return a deep copy of this SDR.
+
+        The returned SDR has an independent ``bits`` array — mutations to
+        either object do not affect the other.  ``unit_id`` and ``timestamp``
+        are copied verbatim.
+        """
+        return SDR(
+            bits=self.bits.copy(),
+            unit_id=self.unit_id,
+            timestamp=self.timestamp,
+        )
+
     # ------------------------------------------------------------------
     # Dunder helpers
     # ------------------------------------------------------------------
