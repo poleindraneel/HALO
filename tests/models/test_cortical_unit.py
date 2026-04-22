@@ -76,44 +76,70 @@ def test_encode_timestamp_increments() -> None:
 
 
 def test_connected_synapses_only_count() -> None:
-    """Columns with no connected synapses on active inputs score 0 overlap."""
-    cfg = _config(n_columns=10, sparsity=0.2, stimulus_threshold=0.0)
+    """Only synapses with permanence >= syn_perm_connected contribute to overlap.
+
+    Setup: col 0 and col 1 both have potential connections to input 0.
+    When col 0's permanence is above the connected threshold and col 1's is
+    below, only col 0 accumulates overlap → col 0 must win WTA (k=1).
+    Swapping permanences reverses the winner, proving the threshold matters.
+    """
+    cfg = _config(n_columns=10, sparsity=0.1, stimulus_threshold=0.0)  # k=1
     rng = np.random.default_rng(0)
     unit = CorticalUnit(unit_id="u", config=cfg, rng=rng, input_dim=10)
 
-    # Force all permanences below connected threshold — no column gets overlap
-    unit._permanences[:] = cfg.syn_perm_connected - 0.1
-    unit._potential_pool[:] = True
+    unit._potential_pool[:] = False
+    unit._permanences[:] = 0.0
+    # Both cols compete for input 0
+    unit._potential_pool[0, 0] = True
+    unit._potential_pool[1, 0] = True
 
-    # All-ones input — but no connected synapses
-    inp = np.ones(10, dtype=float)
-    # Even with no overlaps, WTA still picks k winners (argpartition on zeros)
+    inp = np.zeros(10, dtype=float)
+    inp[0] = 1.0
+
+    # Col 0 connected, col 1 not → col 0 gets overlap 1, col 1 gets 0 → col 0 wins
+    unit._permanences[0, 0] = cfg.syn_perm_connected + 0.1
+    unit._permanences[1, 0] = cfg.syn_perm_connected - 0.1
     sdr = unit.encode(inp)
-    # overlaps are all 0 — boosted overlaps all 0 — WTA picks arbitrary k cols
-    # key assertion: total active == k regardless
-    k = max(1, int(cfg.sparsity * cfg.n_columns))
-    assert int(sdr.bits.sum()) == k
+    assert sdr.bits[0], "Col 0 should win: its synapse is connected"
+    assert not sdr.bits[1], "Col 1 should not win: its synapse is below threshold"
+
+    # Swap: col 1 connected, col 0 not → col 1 wins
+    unit._permanences[0, 0] = cfg.syn_perm_connected - 0.1
+    unit._permanences[1, 0] = cfg.syn_perm_connected + 0.1
+    sdr = unit.encode(inp)
+    assert sdr.bits[1], "Col 1 should win after permanences are swapped"
+    assert not sdr.bits[0], "Col 0 should not win: its synapse is now below threshold"
 
 
 def test_encode_stimulus_threshold_zeros_low_overlap() -> None:
-    """Columns with overlap below stimulus_threshold are excluded from WTA."""
-    cfg = _config(n_columns=20, sparsity=0.1, stimulus_threshold=5.0)
+    """Columns with overlap < stimulus_threshold are excluded from WTA winners.
+
+    Setup: col 0 has 3 connected synapses on active inputs (overlap=3),
+    col 1 has 1 connected synapse on an active input (overlap=1).
+    With stimulus_threshold=3, col 1's overlap is zeroed out and col 0
+    must be the sole winner (k=1).
+    """
+    cfg = _config(n_columns=10, sparsity=0.1, stimulus_threshold=3.0)  # k=1
     rng = np.random.default_rng(0)
-    unit = CorticalUnit(unit_id="u", config=cfg, rng=rng, input_dim=50)
+    unit = CorticalUnit(unit_id="u", config=cfg, rng=rng, input_dim=10)
 
-    # Force all permanences above connected threshold so all inputs connect
-    unit._permanences[:] = cfg.syn_perm_connected + 0.1
-    unit._potential_pool[:] = True
+    unit._potential_pool[:] = False
+    unit._permanences[:] = 0.0
 
-    # Sparse input — only 2 active bits → max overlap = 2 < threshold 5
-    inp = np.zeros(50, dtype=float)
-    inp[:2] = 1.0
+    # Col 0: 3 connected synapses → overlap = 3 >= threshold
+    unit._potential_pool[0, :3] = True
+    unit._permanences[0, :3] = cfg.syn_perm_connected + 0.1
+
+    # Col 1: 1 connected synapse → overlap = 1 < threshold (will be zeroed)
+    unit._potential_pool[1, 3] = True
+    unit._permanences[1, 3] = cfg.syn_perm_connected + 0.1
+
+    inp = np.zeros(10, dtype=float)
+    inp[:4] = 1.0  # inputs 0–3 all active
 
     sdr = unit.encode(inp)
-    # All boosted scores are 0 (below threshold) — WTA picks k arbitrary cols
-    # The important thing: it doesn't crash and returns correct size
-    k = max(1, int(cfg.sparsity * cfg.n_columns))
-    assert int(sdr.bits.sum()) == k
+    assert sdr.bits[0], "Col 0 (overlap 3 >= threshold 3) must win"
+    assert not sdr.bits[1], "Col 1 (overlap 1 < threshold 3) must not win"
 
 
 def test_potential_pool_global_covers_all_inputs() -> None:

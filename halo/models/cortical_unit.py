@@ -105,8 +105,9 @@ class CorticalUnit(CorticalUnitBase):
             self._permanences >= self._config.syn_perm_connected
         ) & self._potential_pool  # (n_columns, input_dim) bool
 
-        # Step 2 — overlap: count of connected + active input bits per column
-        overlaps: np.ndarray = connected @ input_bool  # (n_columns,) int
+        # Step 2 — overlap: count of connected + active input bits per column.
+        # Cast to int32 so matmul sums counts, not saturated booleans.
+        overlaps: np.ndarray = connected @ input_bool.astype(np.int32)  # (n_columns,) int
 
         # Step 3 — stimulus threshold
         overlaps = np.where(
