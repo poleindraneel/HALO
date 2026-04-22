@@ -22,19 +22,137 @@ _VALID_CONSENSUS_METHODS = frozenset({"weighted_vote"})
 
 @dataclass
 class CorticalConfig:
-    """Parameters for each CorticalUnit."""
+    """Parameters for each CorticalUnit (HTM Spatial Pooler + learning rules).
 
-    n_columns: int      # e.g. 2048 — total number of minicolumns
-    sparsity: float     # e.g. 0.02 — fraction of active columns per step
-    learning_rate: float  # e.g. 0.1 — Hebbian weight delta magnitude
+    References
+    ----------
+    Hawkins et al. 2011 — Hierarchical Temporal Memory white paper.
+    NeoCortexAPI (Dobric): Entities/HtmConfig.cs.
+    """
+
+    # ------------------------------------------------------------------
+    # Column topology
+    # ------------------------------------------------------------------
+    n_columns: int          # Total minicolumns, e.g. 2048
+    sparsity: float         # Target fraction of active columns, e.g. 0.02
+
+    # ------------------------------------------------------------------
+    # Receptive field
+    # ------------------------------------------------------------------
+    potential_radius: int   # Input radius each column can connect to; -1 = global
+    potential_pct: float    # Fraction of inputs in RF to sample as potential synapses
+
+    # ------------------------------------------------------------------
+    # Permanence (proximal synapses)
+    # ------------------------------------------------------------------
+    syn_perm_connected: float       # Threshold above which a synapse is "connected"
+    syn_perm_active_inc: float      # Permanence increment when input is active
+    syn_perm_inactive_dec: float    # Permanence decrement when input is inactive
+    syn_perm_max: float             # Maximum permanence (HTM spec: 1.0)
+
+    # ------------------------------------------------------------------
+    # Inhibition
+    # ------------------------------------------------------------------
+    stimulus_threshold: float   # Min overlap score for a column to participate
+    local_area_density: float   # Target fraction of active columns in inhibition area
+    global_inhibition: bool     # True → global WTA; False → local neighbourhood WTA
+
+    # ------------------------------------------------------------------
+    # Homeostatic plasticity (boosting)
+    # Schultz 1997; similar mechanism in NeoCortexAPI SpatialPooler.cs
+    # ------------------------------------------------------------------
+    max_boost: float                    # Maximum boost factor for underactive columns
+    duty_cycle_period: int              # Steps over which duty cycles are averaged
+    min_pct_overlap_duty_cycles: float  # Min overlap duty cycle fraction
+    min_pct_active_duty_cycles: float   # Min active duty cycle fraction
+    update_period: int                  # Steps between boost/inhibition radius updates
+
+    # ------------------------------------------------------------------
+    # Deprecated — used by placeholder Hebbian rule; removed in issue #14
+    # ------------------------------------------------------------------
+    learning_rate: float    # Legacy Hebbian delta magnitude
+
+    # ------------------------------------------------------------------
+    # Auto-derived (set in __post_init__, do NOT put in YAML)
+    # ------------------------------------------------------------------
+    syn_perm_trim_threshold: float = 0.0        # active_inc / 2
+    syn_perm_below_stimulus_inc: float = 0.0    # connected / 10
 
     def __post_init__(self) -> None:
+        # Topology
         if self.n_columns < 1:
             raise ValueError(f"n_columns must be ≥ 1, got {self.n_columns}")
         if not (0.0 < self.sparsity < 1.0):
             raise ValueError(f"sparsity must be in (0, 1), got {self.sparsity}")
+        if self.potential_radius < -1:
+            raise ValueError(
+                f"potential_radius must be -1 (global) or ≥ 0, got {self.potential_radius}"
+            )
+        if not (0.0 < self.potential_pct <= 1.0):
+            raise ValueError(
+                f"potential_pct must be in (0, 1], got {self.potential_pct}"
+            )
+
+        # Permanence ordering
+        if not (0.0 < self.syn_perm_connected < 1.0):
+            raise ValueError(
+                f"syn_perm_connected must be in (0, 1), got {self.syn_perm_connected}"
+            )
+        if self.syn_perm_active_inc <= 0.0:
+            raise ValueError(
+                f"syn_perm_active_inc must be > 0, got {self.syn_perm_active_inc}"
+            )
+        if self.syn_perm_inactive_dec <= 0.0:
+            raise ValueError(
+                f"syn_perm_inactive_dec must be > 0, got {self.syn_perm_inactive_dec}"
+            )
+        if self.syn_perm_inactive_dec >= self.syn_perm_active_inc:
+            raise ValueError(
+                "syn_perm_inactive_dec must be < syn_perm_active_inc "
+                f"(got {self.syn_perm_inactive_dec} ≥ {self.syn_perm_active_inc})"
+            )
+        if self.syn_perm_max != 1.0:
+            raise ValueError(
+                f"syn_perm_max must be 1.0 per HTM spec, got {self.syn_perm_max}"
+            )
+
+        # Inhibition
+        if self.stimulus_threshold < 0.0:
+            raise ValueError(
+                f"stimulus_threshold must be ≥ 0, got {self.stimulus_threshold}"
+            )
+        if not (0.0 < self.local_area_density < 1.0):
+            raise ValueError(
+                f"local_area_density must be in (0, 1), got {self.local_area_density}"
+            )
+
+        # Boosting
+        if self.max_boost < 1.0:
+            raise ValueError(f"max_boost must be ≥ 1.0, got {self.max_boost}")
+        if self.duty_cycle_period < 1:
+            raise ValueError(
+                f"duty_cycle_period must be ≥ 1, got {self.duty_cycle_period}"
+            )
+        if self.update_period < 1:
+            raise ValueError(f"update_period must be ≥ 1, got {self.update_period}")
+        if not (0.0 < self.min_pct_overlap_duty_cycles < 1.0):
+            raise ValueError(
+                "min_pct_overlap_duty_cycles must be in (0, 1), "
+                f"got {self.min_pct_overlap_duty_cycles}"
+            )
+        if not (0.0 < self.min_pct_active_duty_cycles < 1.0):
+            raise ValueError(
+                "min_pct_active_duty_cycles must be in (0, 1), "
+                f"got {self.min_pct_active_duty_cycles}"
+            )
+
+        # Legacy
         if self.learning_rate <= 0.0:
             raise ValueError(f"learning_rate must be > 0, got {self.learning_rate}")
+
+        # Auto-derive thresholds (NeoCortexAPI HtmConfig.cs pattern)
+        self.syn_perm_trim_threshold = self.syn_perm_active_inc / 2.0
+        self.syn_perm_below_stimulus_inc = self.syn_perm_connected / 10.0
 
 
 @dataclass
