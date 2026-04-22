@@ -4,8 +4,33 @@ max_steps: 100
 seed: 42
 
 cortical:
+  # Column topology
   n_columns: 2048
   sparsity: 0.02
+
+  # Receptive field
+  potential_radius: -1        # -1 = global (all inputs reachable)
+  potential_pct: 0.5          # 50% of inputs sampled as potential synapses
+
+  # Permanence (proximal synapses)
+  syn_perm_connected: 0.5     # Threshold for a synapse to count as connected
+  syn_perm_active_inc: 0.1    # Increment when presynaptic input is active
+  syn_perm_inactive_dec: 0.01 # Decrement when presynaptic input is inactive
+  syn_perm_max: 1.0           # HTM spec fixed maximum
+
+  # Inhibition
+  stimulus_threshold: 0.0     # Min overlap to participate in inhibition
+  local_area_density: 0.02    # Target sparsity within inhibition neighbourhood
+  global_inhibition: true     # Use global winner-take-all
+
+  # Homeostatic plasticity (boosting)
+  max_boost: 10.0
+  duty_cycle_period: 1000
+  min_pct_overlap_duty_cycles: 0.001
+  min_pct_active_duty_cycles: 0.001
+  update_period: 50
+
+  # Legacy (placeholder Hebbian rule — replaced in issue #14)
   learning_rate: 0.1
 
 thalamic:
