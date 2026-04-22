@@ -66,6 +66,16 @@ class CorticalUnit(CorticalUnitBase):
         self._input_dim = input_dim
         self._step: int = 0
         self._k: int = max(1, int(config.sparsity * config.n_columns))
+
+        if not config.global_inhibition or config.local_area_density != 0.0:
+            logger.warning(
+                "CorticalUnit '%s': local inhibition (global_inhibition=%s, "
+                "local_area_density=%s) is not yet implemented; "
+                "falling back to sparsity-based global winner selection.",
+                unit_id,
+                config.global_inhibition,
+                config.local_area_density,
+            )
         self._init_state()
 
     # ------------------------------------------------------------------
@@ -98,7 +108,7 @@ class CorticalUnit(CorticalUnitBase):
         SDR
             Sparse encoding with ``sparsity * n_columns`` active bits.
         """
-        input_bool = input_data.astype(bool)
+        input_bool = input_data > 0
 
         # Step 1 — connected synapses within potential pool
         connected: np.ndarray = (
@@ -230,9 +240,10 @@ class CorticalUnit(CorticalUnitBase):
     def _init_potential_pool(self, n_columns: int, input_dim: int) -> np.ndarray:
         """Build the boolean potential pool matrix.
 
-        If ``potential_radius == -1`` (global), every column can connect to
-        every input.  Otherwise each column samples ``potential_pct`` of the
-        inputs within its local neighbourhood.
+        If ``potential_radius == -1`` (global), each column samples
+        ``potential_pct`` of all inputs as its potential pool.
+        Otherwise each column samples ``potential_pct`` of the inputs within
+        its local neighbourhood (radius steps either side of the mapped centre).
         """
         cfg = self._config
         pool = np.zeros((n_columns, input_dim), dtype=bool)

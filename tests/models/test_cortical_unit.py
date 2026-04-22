@@ -142,8 +142,8 @@ def test_encode_stimulus_threshold_zeros_low_overlap() -> None:
     assert not sdr.bits[1], "Col 1 (overlap 1 < threshold 3) must not win"
 
 
-def test_potential_pool_global_covers_all_inputs() -> None:
-    """With potential_radius=-1, every column has potential connections to inputs."""
+def test_potential_pool_global_gives_each_column_a_potential_connection() -> None:
+    """With potential_radius=-1, every column has at least one potential connection."""
     unit = _unit()
     # Each column should have at least one potential connection
     assert unit._potential_pool.any(axis=1).all()
