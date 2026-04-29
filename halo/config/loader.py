@@ -8,12 +8,14 @@ from pathlib import Path
 import yaml
 
 from halo.config.schema import (
-    CorticalConfig,
+    CategoryEncoderConfig,
     ConsensusConfig,
     HALOConfig,
     ReliabilityConfig,
+    ScalarEncoderConfig,
     ThalamicConfig,
     TRNConfig,
+    CorticalConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,6 +59,19 @@ def load_config(path: str | Path) -> HALOConfig:
     reliability = ReliabilityConfig(**raw["reliability"])
     consensus = ConsensusConfig(**raw["consensus"])
 
+    encoder: ScalarEncoderConfig | CategoryEncoderConfig | None = None
+    if "encoder" in raw:
+        enc_raw: dict = dict(raw["encoder"])
+        enc_type = enc_raw.pop("type", None)
+        if enc_type == "scalar":
+            encoder = ScalarEncoderConfig(**enc_raw)
+        elif enc_type == "category":
+            encoder = CategoryEncoderConfig(**enc_raw)
+        else:
+            raise ValueError(
+                f"encoder.type must be 'scalar' or 'category', got {enc_type!r}"
+            )
+
     cfg = HALOConfig(
         n_units=int(raw["n_units"]),
         n_input_dim=int(raw["n_input_dim"]),
@@ -67,6 +82,7 @@ def load_config(path: str | Path) -> HALOConfig:
         consensus=consensus,
         max_steps=int(raw["max_steps"]),
         seed=int(raw["seed"]),
+        encoder=encoder,
     )
     logger.info("Config loaded: %d units, %d steps", cfg.n_units, cfg.max_steps)
     return cfg

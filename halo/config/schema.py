@@ -5,9 +5,11 @@ All parameters are captured here — no magic numbers elsewhere in the code.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 __all__ = [
+    "ScalarEncoderConfig",
+    "CategoryEncoderConfig",
     "CorticalConfig",
     "ThalamicConfig",
     "TRNConfig",
@@ -18,6 +20,65 @@ __all__ = [
 
 _VALID_AGGREGATIONS = frozenset({"or", "weighted_sum"})
 _VALID_CONSENSUS_METHODS = frozenset({"weighted_vote"})
+_VALID_ENCODER_TYPES = frozenset({"scalar", "category"})
+
+
+# ------------------------------------------------------------------
+# Encoder configs
+# ------------------------------------------------------------------
+
+@dataclass
+class ScalarEncoderConfig:
+    """Parameters for :class:`~halo.encoders.ScalarEncoder`.
+
+    References
+    ----------
+    Hawkins & Ahmad 2016, Fig. 1.
+    NeoCortexAPI: Encoders/ScalarEncoder.cs.
+    """
+
+    n: int              # Total output bits; must match HALOConfig.n_input_dim
+    w: int              # Active bits per encoding
+    min_val: float      # Minimum of the input range
+    max_val: float      # Maximum of the input range
+    periodic: bool = False
+
+    def __post_init__(self) -> None:
+        if self.w < 1:
+            raise ValueError(f"w must be ≥ 1, got {self.w}")
+        if self.n <= self.w:
+            raise ValueError(f"n must be > w, got n={self.n}, w={self.w}")
+        if self.min_val >= self.max_val:
+            raise ValueError(
+                f"min_val must be < max_val, got {self.min_val} >= {self.max_val}"
+            )
+
+
+@dataclass
+class CategoryEncoderConfig:
+    """Parameters for :class:`~halo.encoders.CategoryEncoder`.
+
+    References
+    ----------
+    NeoCortexAPI: Encoders/CategoryEncoder.cs.
+    """
+
+    n: int                              # Total output bits
+    w: int                              # Active bits per category
+    categories: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.w < 1:
+            raise ValueError(f"w must be ≥ 1, got {self.w}")
+        if not self.categories:
+            raise ValueError("categories must be non-empty")
+        if len(self.categories) != len(set(self.categories)):
+            raise ValueError("categories must not contain duplicates")
+        required = len(self.categories) * self.w
+        if self.n < required:
+            raise ValueError(
+                f"n must be ≥ len(categories)*w = {required}, got n={self.n}"
+            )
 
 
 @dataclass
@@ -282,6 +343,7 @@ class HALOConfig:
     consensus: ConsensusConfig
     max_steps: int
     seed: int
+    encoder: ScalarEncoderConfig | CategoryEncoderConfig | None = None
 
     def __post_init__(self) -> None:
         if self.n_units < 1:
@@ -290,3 +352,8 @@ class HALOConfig:
             raise ValueError(f"n_input_dim must be ≥ 1, got {self.n_input_dim}")
         if self.max_steps < 1:
             raise ValueError(f"max_steps must be ≥ 1, got {self.max_steps}")
+        if self.encoder is not None and self.encoder.n != self.n_input_dim:
+            raise ValueError(
+                f"encoder.n must equal n_input_dim "
+                f"(got encoder.n={self.encoder.n}, n_input_dim={self.n_input_dim})"
+            )
