@@ -269,3 +269,151 @@ def test_reset_reinitialises_boost_factors() -> None:
     unit._boost_factors[:] = 5.0
     unit.reset()
     np.testing.assert_array_equal(unit._boost_factors, np.ones(unit._config.n_columns))
+
+
+# ---------------------------------------------------------------------------
+# temporal_step() — cell-level output
+# ---------------------------------------------------------------------------
+
+def _unit_tm(n_columns: int = 20, cells_per_column: int = 4) -> CorticalUnit:
+    """Small unit for TM tests: 20 columns × 4 cells, input_dim=20."""
+    cfg = _config(
+        n_columns=n_columns,
+        sparsity=0.1,        # k=2 winners
+        cells_per_column=cells_per_column,
+        activation_threshold=2,
+        min_threshold=1,
+        max_new_synapse_count=4,
+        initial_permanence=0.21,
+        permanence_increment=0.1,
+        permanence_decrement=0.1,
+        predicted_segment_decrement=0.0,
+    )
+    rng = np.random.default_rng(7)
+    return CorticalUnit(unit_id="tm", config=cfg, rng=rng, input_dim=20)
+
+
+def _col_sdr(unit: CorticalUnit, active_cols: list[int]) -> "SDR":
+    from halo.core.sdr import SDR
+    bits = np.zeros(unit._config.n_columns, dtype=bool)
+    for c in active_cols:
+        bits[c] = True
+    return SDR(bits=bits, unit_id=unit.unit_id, timestamp=0)
+
+
+def test_tm_total_cell_count() -> None:
+    """_segments has exactly n_columns * cells_per_column entries at init."""
+    unit = _unit_tm(n_columns=20, cells_per_column=4)
+    assert len(unit._segments) == 20 * 4
+
+
+def test_tm_burst_activates_all_cells_in_column() -> None:
+    """An unpredicted active column activates all cells_per_column cells."""
+    unit = _unit_tm()
+    n_cpc = unit._config.cells_per_column
+    col = 3
+    sdr = _col_sdr(unit, [col])
+    cell_sdr = unit.temporal_step(sdr)
+    col_bits = cell_sdr.bits[col * n_cpc : (col + 1) * n_cpc]
+    assert col_bits.all(), "All cells in a bursting column must be active"
+
+
+def test_tm_burst_winner_is_deterministic() -> None:
+    """Same config + seed → same winner cell for a bursting column."""
+    def run_winner(col: int) -> int:
+        unit = _unit_tm()
+        sdr = _col_sdr(unit, [col])
+        unit.temporal_step(sdr)
+        return next(iter(unit._winner_cells))
+
+    w1 = run_winner(5)
+    w2 = run_winner(5)
+    assert w1 == w2
+
+
+def test_tm_predicted_column_activates_only_predicted_cells() -> None:
+    """A correctly predicted column activates only the predictive cells."""
+    unit = _unit_tm()
+    n_cpc = unit._config.cells_per_column
+    col = 0
+    predicted_cell = col * n_cpc + 1  # inject cell 1 of col 0 as predictive
+
+    unit._predictive_cells = {predicted_cell}
+    unit._learning_seg_for_predicted = {predicted_cell: None}
+
+    cell_sdr = unit.temporal_step(_col_sdr(unit, [col]))
+
+    col_bits = cell_sdr.bits[col * n_cpc : (col + 1) * n_cpc]
+    assert col_bits.sum() == 1, "Only predicted cell should be active"
+    assert cell_sdr.bits[predicted_cell], "The predicted cell must be active"
+
+
+def test_tm_one_winner_per_burst_column() -> None:
+    """Each bursting column produces exactly one winner cell."""
+    unit = _unit_tm()
+    active_cols = [0, 1, 3]
+    unit.temporal_step(_col_sdr(unit, active_cols))
+    # No predictive cells → all columns burst → one winner each
+    assert len(unit._winner_cells) == len(active_cols)
+
+
+# ---------------------------------------------------------------------------
+# learn() — TM AdaptSegments / synapse growth
+# ---------------------------------------------------------------------------
+
+def test_tm_learn_reinforces_synapse_to_prev_winner() -> None:
+    """Synapse to a prev_winner_cell increases after _adapt_segments()."""
+    unit = _unit_tm()
+    n_cpc = unit._config.cells_per_column
+    cell = 0
+    pre = n_cpc  # cell 0 in column 1
+    unit._segments[cell] = [{pre: 0.5}]
+    unit._prev_winner_cells = {pre}
+    unit._winner_cells = {cell}
+    unit._learning_seg_for_winner = {cell: 0}
+
+    perm_before = unit._segments[cell][0][pre]
+    unit._adapt_segments()
+    assert unit._segments[cell][0][pre] > perm_before
+
+
+def test_tm_learn_grows_synapses_when_no_active_segment() -> None:
+    """Winner with no learning segment gets a new segment with synapses."""
+    unit = _unit_tm()
+    n_cpc = unit._config.cells_per_column
+    winner_cell = 0
+    prev_winner = n_cpc
+    unit._prev_winner_cells = {prev_winner}
+    unit._winner_cells = {winner_cell}
+    unit._learning_seg_for_winner = {winner_cell: None}
+
+    assert len(unit._segments[winner_cell]) == 0
+    unit._adapt_segments()
+    assert len(unit._segments[winner_cell]) == 1
+    assert prev_winner in unit._segments[winner_cell][0]
+
+
+def test_tm_no_synapses_grown_on_first_step() -> None:
+    """If prev_winner_cells is empty (first step), no segments are created."""
+    unit = _unit_tm()
+    winner_cell = 0
+    unit._prev_winner_cells = set()
+    unit._winner_cells = {winner_cell}
+    unit._learning_seg_for_winner = {winner_cell: None}
+
+    unit._adapt_segments()
+    assert len(unit._segments[winner_cell]) == 0
+
+
+def test_tm_reset_clears_temporal_state() -> None:
+    """After reset(), all TM state is cleared."""
+    unit = _unit_tm()
+    unit.temporal_step(_col_sdr(unit, [0, 1]))
+    assert unit._active_cells  # something was set
+
+    unit.reset()
+    assert len(unit._segments) == unit._config.n_columns * unit._config.cells_per_column
+    assert all(len(segs) == 0 for segs in unit._segments)
+    assert unit._active_cells == set()
+    assert unit._winner_cells == set()
+    assert unit._predictive_cells == set()

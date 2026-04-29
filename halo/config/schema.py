@@ -73,6 +73,19 @@ class CorticalConfig:
     learning_rate: float    # Legacy Hebbian delta magnitude
 
     # ------------------------------------------------------------------
+    # Temporal Memory (distal synapses)
+    # Hawkins et al. 2011 TM spec; NeoCortexAPI TemporalMemory.cs.
+    # ------------------------------------------------------------------
+    cells_per_column: int = 32
+    activation_threshold: int = 13      # min connected synapses to prev active cells → active segment
+    min_threshold: int = 10             # min potential synapses to prev active cells → matching segment
+    max_new_synapse_count: int = 20     # max new synapses grown per winner cell per step
+    initial_permanence: float = 0.21    # starting permanence for newly grown synapses
+    permanence_increment: float = 0.1   # TM Hebbian increment
+    permanence_decrement: float = 0.1   # TM Hebbian decrement
+    predicted_segment_decrement: float = 0.0  # punishment decrement for wrong predictions
+
+    # ------------------------------------------------------------------
     # Auto-derived (set in __post_init__, do NOT put in YAML)
     # ------------------------------------------------------------------
     syn_perm_trim_threshold: float = 0.0        # active_inc / 2
@@ -149,6 +162,39 @@ class CorticalConfig:
         # Legacy
         if self.learning_rate <= 0.0:
             raise ValueError(f"learning_rate must be > 0, got {self.learning_rate}")
+
+        # Temporal Memory
+        if self.cells_per_column < 1:
+            raise ValueError(f"cells_per_column must be ≥ 1, got {self.cells_per_column}")
+        if self.min_threshold <= 0:
+            raise ValueError(f"min_threshold must be > 0, got {self.min_threshold}")
+        if self.activation_threshold < self.min_threshold:
+            raise ValueError(
+                f"activation_threshold must be ≥ min_threshold "
+                f"(got {self.activation_threshold} < {self.min_threshold})"
+            )
+        if self.max_new_synapse_count < 1:
+            raise ValueError(
+                f"max_new_synapse_count must be ≥ 1, got {self.max_new_synapse_count}"
+            )
+        if not (0.0 <= self.initial_permanence < self.syn_perm_connected):
+            raise ValueError(
+                f"initial_permanence must be in [0, syn_perm_connected), "
+                f"got {self.initial_permanence} (syn_perm_connected={self.syn_perm_connected})"
+            )
+        if self.permanence_increment < 0.0:
+            raise ValueError(
+                f"permanence_increment must be ≥ 0, got {self.permanence_increment}"
+            )
+        if self.permanence_decrement < 0.0:
+            raise ValueError(
+                f"permanence_decrement must be ≥ 0, got {self.permanence_decrement}"
+            )
+        if self.predicted_segment_decrement < 0.0:
+            raise ValueError(
+                f"predicted_segment_decrement must be ≥ 0, "
+                f"got {self.predicted_segment_decrement}"
+            )
 
         # Auto-derive thresholds (NeoCortexAPI HtmConfig.cs pattern)
         self.syn_perm_trim_threshold = self.syn_perm_active_inc / 2.0
