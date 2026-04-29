@@ -201,3 +201,54 @@ def test_baseline_yaml_loads() -> None:
     assert cfg.cortical.syn_perm_trim_threshold == pytest.approx(0.05)
     assert cfg.cortical.syn_perm_below_stimulus_inc == pytest.approx(0.05)
     assert cfg.cortical.global_inhibition is True
+    # TM fields present with expected defaults
+    assert cfg.cortical.cells_per_column == 32
+    assert cfg.cortical.activation_threshold == 13
+    assert cfg.cortical.initial_permanence == pytest.approx(0.21)
+
+
+# ---------------------------------------------------------------------------
+# Validation — Temporal Memory fields
+# ---------------------------------------------------------------------------
+
+def test_tm_cells_per_column_zero_raises() -> None:
+    kw = _valid_kwargs()
+    kw["cells_per_column"] = 0
+    with pytest.raises(ValueError, match="cells_per_column"):
+        CorticalConfig(**kw)
+
+
+def test_tm_activation_threshold_below_min_threshold_raises() -> None:
+    kw = _valid_kwargs()
+    kw["activation_threshold"] = 5
+    kw["min_threshold"] = 10
+    with pytest.raises(ValueError, match="activation_threshold"):
+        CorticalConfig(**kw)
+
+
+def test_tm_max_new_synapse_count_zero_raises() -> None:
+    kw = _valid_kwargs()
+    kw["max_new_synapse_count"] = 0
+    with pytest.raises(ValueError, match="max_new_synapse_count"):
+        CorticalConfig(**kw)
+
+
+def test_tm_initial_permanence_above_connected_raises() -> None:
+    kw = _valid_kwargs()
+    kw["initial_permanence"] = 0.6   # > syn_perm_connected (0.5)
+    with pytest.raises(ValueError, match="initial_permanence"):
+        CorticalConfig(**kw)
+
+
+def test_tm_permanence_increment_negative_raises() -> None:
+    kw = _valid_kwargs()
+    kw["permanence_increment"] = -0.1
+    with pytest.raises(ValueError, match="permanence_increment"):
+        CorticalConfig(**kw)
+
+
+def test_tm_predicted_segment_decrement_negative_raises() -> None:
+    kw = _valid_kwargs()
+    kw["predicted_segment_decrement"] = -0.01
+    with pytest.raises(ValueError, match="predicted_segment_decrement"):
+        CorticalConfig(**kw)

@@ -33,6 +33,16 @@ cortical:
   # Legacy (placeholder Hebbian rule — replaced in issue #14)
   learning_rate: 0.1
 
+  # Temporal Memory (distal synapses — issue #16)
+  cells_per_column: 32
+  activation_threshold: 13   # min connected synapses to prev active cells → active segment
+  min_threshold: 10           # min potential synapses to prev active cells → matching segment
+  max_new_synapse_count: 20   # max new synapses grown per winner cell per step
+  initial_permanence: 0.21    # starting permanence for newly grown synapses (< syn_perm_connected)
+  permanence_increment: 0.1   # TM Hebbian increment (distinct from SP syn_perm_active_inc)
+  permanence_decrement: 0.1   # TM Hebbian decrement
+  predicted_segment_decrement: 0.0  # punishment for wrong predictions (0 = off)
+
 thalamic:
   aggregation: or
 
