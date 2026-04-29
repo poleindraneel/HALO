@@ -3,6 +3,14 @@ n_input_dim: 256
 max_steps: 100
 seed: 42
 
+encoder:
+  type: scalar
+  n: 256          # must match n_input_dim
+  w: 21           # ~8% sparsity
+  min_val: 0.0
+  max_val: 1.0
+  periodic: false
+
 cortical:
   # Column topology
   n_columns: 2048

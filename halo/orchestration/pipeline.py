@@ -19,9 +19,10 @@ import logging
 
 import numpy as np
 
-from halo.config.schema import HALOConfig
+from halo.config.schema import HALOConfig, ScalarEncoderConfig, CategoryEncoderConfig
 from halo.consensus.engine import ConsensusEngine
 from halo.core.sdr import SDR
+from halo.encoders import EncoderBase, ScalarEncoder, CategoryEncoder
 from halo.layers.heterarchical import HeterarchicalLayer
 from halo.layers.thalamic import ThalamicLayer
 from halo.layers.trn import TRNGatingLayer
@@ -85,6 +86,24 @@ class HALOPipeline:
 
         # Previous output for dopamine signal computation
         self._prev_output: SDR | None = None
+
+        # --- Optional encoder ---
+        self._encoder: EncoderBase | None = None
+        if config.encoder is not None:
+            if isinstance(config.encoder, ScalarEncoderConfig):
+                self._encoder = ScalarEncoder(
+                    n=config.encoder.n,
+                    w=config.encoder.w,
+                    min_val=config.encoder.min_val,
+                    max_val=config.encoder.max_val,
+                    periodic=config.encoder.periodic,
+                )
+            else:
+                self._encoder = CategoryEncoder(
+                    n=config.encoder.n,
+                    w=config.encoder.w,
+                    categories=config.encoder.categories,
+                )
 
         logger.info(
             "HALOPipeline initialised: %d units, input_dim=%d",
@@ -162,15 +181,19 @@ class HALOPipeline:
 
     def run(
         self,
-        input_stream: list[np.ndarray] | None = None,
+        input_stream: list[np.ndarray | float | str] | None = None,
     ) -> list[SDR]:
         """Run the pipeline for ``config.max_steps`` steps.
 
         Parameters
         ----------
         input_stream:
-            Optional list of input arrays.  If *None* or shorter than
-            ``max_steps``, random inputs are generated for missing steps.
+            Optional list of inputs.  When an encoder is configured, items
+            may be ``float`` (scalar encoder) or ``str`` (category encoder)
+            and will be encoded automatically.  Raw ``np.ndarray`` items
+            bypass the encoder.  If *None* or shorter than ``max_steps``,
+            missing steps use random inputs (encoded if encoder is
+            configured, Gaussian noise otherwise).
 
         Returns
         -------
@@ -181,12 +204,44 @@ class HALOPipeline:
         outputs: list[SDR] = []
         for i in range(self._config.max_steps):
             if input_stream is not None and i < len(input_stream):
-                inp = input_stream[i]
+                raw = input_stream[i]
             else:
-                inp = rng.standard_normal(self._config.n_input_dim)
+                raw = self._random_input(rng)
+
+            inp = self._prepare_input(raw, step=i)
             outputs.append(self.step(inp))
         logger.info("Run complete: %d steps", self._config.max_steps)
         return outputs
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    def _random_input(self, rng: np.random.Generator) -> np.ndarray | float | str:
+        """Generate a random input appropriate for the configured encoder."""
+        if self._encoder is None:
+            return rng.standard_normal(self._config.n_input_dim)
+        enc_cfg = self._config.encoder
+        if isinstance(enc_cfg, ScalarEncoderConfig):
+            return float(rng.uniform(enc_cfg.min_val, enc_cfg.max_val))
+        # CategoryEncoder
+        idx = int(rng.integers(len(enc_cfg.categories)))  # type: ignore[union-attr]
+        return enc_cfg.categories[idx]  # type: ignore[union-attr]
+
+    def _prepare_input(
+        self, raw: np.ndarray | float | str, step: int
+    ) -> np.ndarray:
+        """Convert *raw* to a bool numpy array suitable for CorticalUnit.encode().
+
+        If an encoder is configured and *raw* is a scalar or category string,
+        encode it first.  Raw numpy arrays always bypass the encoder.
+        """
+        if self._encoder is not None and not isinstance(raw, np.ndarray):
+            return self._encoder.encode(raw, unit_id="pipeline_encoder", timestamp=step).bits
+        if isinstance(raw, np.ndarray):
+            return raw
+        # Fallback: should not happen in normal operation.
+        return np.array(raw, dtype=float)
 
     def get_reliability_history(self) -> list[dict[str, float]]:
         """Return the per-step trust score snapshots collected during :meth:`run`."""

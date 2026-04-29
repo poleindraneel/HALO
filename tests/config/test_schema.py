@@ -252,3 +252,90 @@ def test_tm_predicted_segment_decrement_negative_raises() -> None:
     kw["predicted_segment_decrement"] = -0.01
     with pytest.raises(ValueError, match="predicted_segment_decrement"):
         CorticalConfig(**kw)
+
+
+# ---------------------------------------------------------------------------
+# Encoder config tests
+# ---------------------------------------------------------------------------
+
+from halo.config.schema import ScalarEncoderConfig, CategoryEncoderConfig, HALOConfig
+
+
+def _halo_config_kwargs() -> dict:
+    """Minimal keyword args for HALOConfig (encoder=None by default)."""
+    from halo.config.schema import (
+        ThalamicConfig, TRNConfig, ReliabilityConfig, ConsensusConfig
+    )
+    return dict(
+        n_units=2,
+        n_input_dim=100,
+        cortical=CorticalConfig(**_valid_kwargs()),
+        thalamic=ThalamicConfig(aggregation="or"),
+        trn=TRNConfig(entropy_threshold=0.5),
+        reliability=ReliabilityConfig(initial_score=0.5, alpha=0.1, min_score=0.01, max_score=1.0),
+        consensus=ConsensusConfig(method="weighted_vote"),
+        max_steps=10,
+        seed=0,
+    )
+
+
+def test_scalar_encoder_config_valid() -> None:
+    enc = ScalarEncoderConfig(n=100, w=10, min_val=0.0, max_val=1.0)
+    assert enc.n == 100
+    assert enc.w == 10
+
+
+def test_scalar_encoder_config_w_zero_raises() -> None:
+    with pytest.raises(ValueError, match="w must be"):
+        ScalarEncoderConfig(n=100, w=0, min_val=0.0, max_val=1.0)
+
+
+def test_scalar_encoder_config_n_le_w_raises() -> None:
+    with pytest.raises(ValueError, match="n must be > w"):
+        ScalarEncoderConfig(n=10, w=10, min_val=0.0, max_val=1.0)
+
+
+def test_scalar_encoder_config_min_ge_max_raises() -> None:
+    with pytest.raises(ValueError, match="min_val must be < max_val"):
+        ScalarEncoderConfig(n=100, w=10, min_val=1.0, max_val=0.5)
+
+
+def test_category_encoder_config_valid() -> None:
+    enc = CategoryEncoderConfig(n=20, w=4, categories=["a", "b", "c", "d"])
+    assert enc.w == 4
+    assert enc.categories == ["a", "b", "c", "d"]
+
+
+def test_category_encoder_config_n_too_small_raises() -> None:
+    with pytest.raises(ValueError, match="n must be"):
+        CategoryEncoderConfig(n=10, w=4, categories=["a", "b", "c", "d"])
+
+
+def test_category_encoder_config_duplicates_raises() -> None:
+    with pytest.raises(ValueError, match="duplicates"):
+        CategoryEncoderConfig(n=40, w=4, categories=["a", "b", "a"])
+
+
+def test_halo_config_encoder_n_mismatch_raises() -> None:
+    kw = _halo_config_kwargs()
+    # n_input_dim=100 but encoder.n=50 — should fail
+    kw["encoder"] = ScalarEncoderConfig(n=50, w=5, min_val=0.0, max_val=1.0)
+    with pytest.raises(ValueError, match="encoder.n must equal n_input_dim"):
+        HALOConfig(**kw)
+
+
+def test_halo_config_encoder_n_matches_input_dim_valid() -> None:
+    kw = _halo_config_kwargs()
+    kw["encoder"] = ScalarEncoderConfig(n=100, w=10, min_val=0.0, max_val=1.0)
+    cfg = HALOConfig(**kw)
+    assert cfg.encoder is not None
+    assert cfg.encoder.n == 100
+
+
+def test_baseline_yaml_loads_with_encoder(tmp_path: pytest.TempPathFactory) -> None:
+    cfg = load_config(Path("configs/baseline.yaml"))
+    assert cfg.encoder is not None
+    assert isinstance(cfg.encoder, ScalarEncoderConfig)
+    assert cfg.encoder.n == cfg.n_input_dim
+    assert cfg.encoder.w == 21
+
