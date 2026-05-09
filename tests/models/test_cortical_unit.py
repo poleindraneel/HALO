@@ -155,6 +155,70 @@ def test_boost_factors_init_to_one() -> None:
 
 
 # ---------------------------------------------------------------------------
+# encode() — lateral_bias behaviour
+# ---------------------------------------------------------------------------
+
+def test_lateral_bias_cannot_activate_zero_overlap_column() -> None:
+    """A column with zero feedforward overlap must not win even with a large lateral bias.
+
+    This verifies the apical-modulation rule: lateral input modulates but
+    does not drive (Hawkins & Ahmad 2016).
+    """
+    cfg = _config(n_columns=10, sparsity=0.1, stimulus_threshold=0.0)  # k=1
+    rng = np.random.default_rng(0)
+    unit = CorticalUnit(unit_id="u", config=cfg, rng=rng, input_dim=10)
+
+    # Give only col 0 a potential + connected synapse; col 1 has none
+    unit._potential_pool[:] = False
+    unit._permanences[:] = 0.0
+    unit._potential_pool[0, 0] = True
+    unit._permanences[0, 0] = cfg.syn_perm_connected + 0.1
+
+    inp = np.zeros(10, dtype=float)
+    inp[0] = 1.0  # col 0 gets overlap 1; col 1 gets overlap 0
+
+    # Large bias on col 1 — must be ignored because col 1 has zero overlap
+    bias = np.zeros(10, dtype=np.float32)
+    bias[1] = 100.0
+
+    sdr = unit.encode(inp, lateral_bias=bias)
+
+    assert sdr.bits[0], "Col 0 (feedforward overlap 1) must win"
+    assert not sdr.bits[1], "Col 1 (zero overlap) must NOT be activated by lateral bias alone"
+
+
+def test_lateral_bias_affects_winner_among_supported_columns() -> None:
+    """Lateral bias shifts the winner when both candidates have feedforward support.
+
+    Two columns share equal feedforward overlap.  A strong bias applied
+    exclusively to col 1 must cause col 1 to win WTA.
+    """
+    cfg = _config(n_columns=10, sparsity=0.1, stimulus_threshold=0.0)  # k=1
+    rng = np.random.default_rng(0)
+    unit = CorticalUnit(unit_id="u", config=cfg, rng=rng, input_dim=10)
+
+    # Both cols connected to input 0 → equal overlap of 1
+    unit._potential_pool[:] = False
+    unit._permanences[:] = 0.0
+    unit._potential_pool[0, 0] = True
+    unit._permanences[0, 0] = cfg.syn_perm_connected + 0.1
+    unit._potential_pool[1, 0] = True
+    unit._permanences[1, 0] = cfg.syn_perm_connected + 0.1
+
+    inp = np.zeros(10, dtype=float)
+    inp[0] = 1.0  # both cols get overlap 1
+
+    # Large bias only on col 1 → col 1's boosted score becomes highest
+    bias = np.zeros(10, dtype=np.float32)
+    bias[1] = 50.0
+
+    sdr = unit.encode(inp, lateral_bias=bias)
+
+    assert sdr.bits[1], "Col 1 (bias=50) must win over col 0 (no bias)"
+    assert not sdr.bits[0], "Col 0 must not win when col 1 has a dominant lateral bias"
+
+
+# ---------------------------------------------------------------------------
 # learn() — permanence updates
 # ---------------------------------------------------------------------------
 

@@ -11,6 +11,7 @@ from halo.config.schema import (
     CategoryEncoderConfig,
     ConsensusConfig,
     HALOConfig,
+    HeterarchicalConfig,
     ReliabilityConfig,
     ScalarEncoderConfig,
     ThalamicConfig,
@@ -72,6 +73,12 @@ def load_config(path: str | Path) -> HALOConfig:
                 f"encoder.type must be 'scalar' or 'category', got {enc_type!r}"
             )
 
+    heterarchical = (
+        HeterarchicalConfig(**raw["heterarchical"])
+        if "heterarchical" in raw
+        else HeterarchicalConfig()
+    )
+
     cfg = HALOConfig(
         n_units=int(raw["n_units"]),
         n_input_dim=int(raw["n_input_dim"]),
@@ -83,6 +90,7 @@ def load_config(path: str | Path) -> HALOConfig:
         max_steps=int(raw["max_steps"]),
         seed=int(raw["seed"]),
         encoder=encoder,
+        heterarchical=heterarchical,
     )
     logger.info("Config loaded: %d units, %d steps", cfg.n_units, cfg.max_steps)
     return cfg

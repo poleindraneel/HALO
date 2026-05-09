@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 __all__ = [
     "ScalarEncoderConfig",
     "CategoryEncoderConfig",
+    "HeterarchicalConfig",
     "CorticalConfig",
     "ThalamicConfig",
     "TRNConfig",
@@ -78,6 +79,31 @@ class CategoryEncoderConfig:
         if self.n < required:
             raise ValueError(
                 f"n must be ≥ len(categories)*w = {required}, got n={self.n}"
+            )
+
+
+@dataclass
+class HeterarchicalConfig:
+    """Parameters for the HeterarchicalLayer lateral weight matrix.
+
+    References
+    ----------
+    Apical dendrite modulation: Hawkins & Ahmad 2016.
+    NAA lateral weights: NeoCortexAPI NAA/NeuralAssociationsAlgorithm.cs.
+    """
+
+    lateral_lr: float = 0.01        # Hebbian potentiation step for co-active column pairs
+    lateral_decay: float = 0.001    # Decay for non-coactive synapses within potential pool
+    lateral_sparsity: float = 0.1   # Fraction of column pairs connected (potential pool density)
+
+    def __post_init__(self) -> None:
+        if self.lateral_lr <= 0.0:
+            raise ValueError(f"lateral_lr must be > 0, got {self.lateral_lr}")
+        if self.lateral_decay < 0.0:
+            raise ValueError(f"lateral_decay must be ≥ 0, got {self.lateral_decay}")
+        if not (0.0 < self.lateral_sparsity <= 1.0):
+            raise ValueError(
+                f"lateral_sparsity must be in (0, 1], got {self.lateral_sparsity}"
             )
 
 
@@ -344,6 +370,7 @@ class HALOConfig:
     max_steps: int
     seed: int
     encoder: ScalarEncoderConfig | CategoryEncoderConfig | None = None
+    heterarchical: HeterarchicalConfig = field(default_factory=HeterarchicalConfig)
 
     def __post_init__(self) -> None:
         if self.n_units < 1:

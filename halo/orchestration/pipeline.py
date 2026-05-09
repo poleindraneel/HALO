@@ -63,8 +63,12 @@ class HALOPipeline:
             for uid in self._unit_ids
         ]
 
-        # --- Heterarchical layer (all-to-all) ---
-        self._heterarchical = HeterarchicalLayer()
+        # --- Heterarchical layer (all-to-all, learned lateral connections) ---
+        self._heterarchical = HeterarchicalLayer(
+            n_columns=config.cortical.n_columns,
+            config=config.heterarchical,
+            rng=np.random.default_rng(rng.integers(2**31)),
+        )
         for uid in self._unit_ids:
             self._heterarchical.register_unit(uid)
         for i, from_id in enumerate(self._unit_ids):
@@ -128,26 +132,35 @@ class HALOPipeline:
         SDR
             Consensus SDR for this timestep.
         """
-        # 1. Encode
-        raw_sdrs: list[SDR] = [unit.encode(input_data) for unit in self._units]
+        # 1. Compute lateral biases from previous step's SDRs (zero on step 0).
+        lateral_biases = self._heterarchical.compute_biases()
 
-        # 2. Lateral mixing
-        mixed_sdrs = self._heterarchical.process(raw_sdrs)
+        # 2. Encode each unit with its lateral bias applied before inhibition.
+        #    Each unit learns from its own SDR — not a union with other units.
+        raw_sdrs: list[SDR] = [
+            unit.encode(input_data, lateral_bias=lateral_biases.get(unit.unit_id))
+            for unit in self._units
+        ]
 
-        # 3. Learn from mixed SDR
-        for unit, sdr in zip(self._units, mixed_sdrs):
+        # 3. Cache current SDRs in heterarchical layer for next step's biases.
+        self._heterarchical.update_sdrs(raw_sdrs)
+
+        # 4. SP + TM learning: each unit learns from its own SDR.
+        for unit, sdr in zip(self._units, raw_sdrs):
             unit.learn(sdr)
 
-        # 4. Thalamic relay — aggregate mixed SDRs into a single broadcast signal.
+        # 5. Hebbian lateral weight update.
+        self._heterarchical.learn(raw_sdrs)
+
+        # 6. Thalamic relay — aggregate per-unit SDRs into a broadcast signal.
         #    (Thalamic relay: Sherman & Guillery 2006)
-        _thalamic_broadcast = self._thalamic.process(mixed_sdrs)  # [SDR(unit_id="thalamic")]
+        _thalamic_broadcast = self._thalamic.process(raw_sdrs)
 
-        # 5. TRN gates the per-unit mixed SDRs based on population entropy.
+        # 7. TRN gates per-unit SDRs based on population entropy.
         #    (TRN-like selective inhibition: Crick 1984; Pinault 2004)
-        #    Gating on per-unit SDRs preserves unit_id for downstream weighting.
-        gated = self._trn.process(mixed_sdrs)
+        gated = self._trn.process(raw_sdrs)
 
-        # 6. Consensus over gated per-unit SDRs weighted by reliability scores.
+        # 8. Consensus over gated per-unit SDRs weighted by reliability scores.
         scores = self._reliability.all_scores()
         if gated:
             final_sdr = self._consensus.aggregate(gated, scores)
@@ -157,13 +170,13 @@ class HALOPipeline:
                 self._config.cortical.n_columns, "consensus", self._step
             )
 
-        # 7. Dopamine signal: overlap with previous output
+        # 9. Dopamine signal: overlap with previous output
         if self._prev_output is not None and self._prev_output.n == final_sdr.n:
             dopamine = overlap_score(self._prev_output, final_sdr) * 2.0 - 1.0
         else:
             dopamine = 0.0
 
-        # 8. Update reliability scores (broadcast same signal to all units)
+        # 10. Update reliability scores (broadcast same signal to all units)
         for uid in self._unit_ids:
             self._reliability.update(uid, dopamine)
         self._reliability_history.append(self._reliability.all_scores())

@@ -92,7 +92,7 @@ class CorticalUnit(CorticalUnitBase):
     def unit_id(self) -> str:
         return self._unit_id
 
-    def encode(self, input_data: np.ndarray) -> SDR:
+    def encode(self, input_data: np.ndarray, *, lateral_bias: np.ndarray | None = None) -> SDR:
         """Compute overlap scores and return the winner-take-all SDR.
 
         Algorithm
@@ -101,13 +101,20 @@ class CorticalUnit(CorticalUnitBase):
         2. Overlap = count of connected synapses active on *input_data*.
         3. Zero columns below stimulus_threshold.
         4. Multiply by boost factors (homeostatic plasticity).
-        5. Top-k columns by boosted overlap → SDR.
+        5. Add *lateral_bias* — but only to columns that already have feedforward
+           support (apical modulation, not driving: Hawkins & Ahmad 2016).
+        6. Top-k columns by boosted overlap → SDR.
 
         Parameters
         ----------
         input_data:
             Boolean or float array of shape ``(input_dim,)``.  Values > 0
             are treated as active input bits.
+        lateral_bias:
+            Optional float array of shape ``(n_columns,)`` produced by
+            :class:`~halo.layers.heterarchical.HeterarchicalLayer`.  Added
+            to boosted overlap scores only for columns with feedforward
+            support (overlap > 0 after thresholding).
 
         Returns
         -------
@@ -126,18 +133,30 @@ class CorticalUnit(CorticalUnitBase):
         overlaps: np.ndarray = connected @ input_bool.astype(np.int32)  # (n_columns,) int
 
         # Step 3 — stimulus threshold
-        overlaps = np.where(
+        overlaps_thresholded = np.where(
             overlaps >= self._config.stimulus_threshold, overlaps, 0
         ).astype(float)
 
         # Step 4 — homeostatic boosting
-        boosted: np.ndarray = overlaps * self._boost_factors
+        boosted: np.ndarray = overlaps_thresholded * self._boost_factors
 
-        # Step 5 — winner-take-all
+        # Step 5 — apical lateral modulation (modulates, does not drive)
+        # Only applied to columns with non-zero feedforward support to prevent
+        # lateral input from activating columns with no feedforward signal.
+        if lateral_bias is not None:
+            if lateral_bias.shape != (self._config.n_columns,):
+                raise ValueError(
+                    f"lateral_bias must have shape ({self._config.n_columns},), "
+                    f"got {lateral_bias.shape}"
+                )
+            eligible: np.ndarray = overlaps_thresholded > 0
+            boosted = boosted + lateral_bias * eligible
+
+        # Step 6 — winner-take-all
         bits = self._winner_take_all(boosted, self._k)
 
         # Update duty cycles (moving average)
-        self._update_overlap_duty_cycle(overlaps > 0)
+        self._update_overlap_duty_cycle(overlaps_thresholded > 0)
         self._update_active_duty_cycle(bits)
 
         self._last_input = input_bool   # cache for learn()
@@ -148,7 +167,7 @@ class CorticalUnit(CorticalUnitBase):
             self._unit_id,
             self._step,
             int(bits.sum()),
-            float(overlaps.mean()),
+            float(overlaps_thresholded.mean()),
         )
         return SDR(bits=bits, unit_id=self._unit_id, timestamp=self._step)
 
