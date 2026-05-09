@@ -144,6 +144,11 @@ class CorticalUnit(CorticalUnitBase):
         # Only applied to columns with non-zero feedforward support to prevent
         # lateral input from activating columns with no feedforward signal.
         if lateral_bias is not None:
+            if lateral_bias.shape != (self._config.n_columns,):
+                raise ValueError(
+                    f"lateral_bias must have shape ({self._config.n_columns},), "
+                    f"got {lateral_bias.shape}"
+                )
             eligible: np.ndarray = overlaps_thresholded > 0
             boosted = boosted + lateral_bias * eligible
 

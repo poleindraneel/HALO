@@ -88,7 +88,7 @@ class HeterarchicalLayer(LayerBase):
         # adjacency: from_id → list[to_id]
         self._adjacency: dict[str, list[str]] = defaultdict(list)
 
-        # reverse adjacency: to_id → list[from_id]  (rebuilt lazily)
+        # reverse adjacency: to_id → list[from_id]  (populated eagerly in add_connection)
         self._reverse: dict[str, list[str]] = defaultdict(list)
 
         # Weight matrices: _weights[from_id][to_id] shape (n, n) float32
@@ -210,9 +210,11 @@ class HeterarchicalLayer(LayerBase):
             for from_id in from_ids:
                 if from_id not in self._prev_sdrs:
                     continue  # no SDR cached yet (first step)
-                sdr_bits = self._prev_sdrs[from_id].bits.astype(np.float32)
-                # W[from][to] @ sdr_from  →  (n,) float bias for to_unit
-                biases[to_id] += self._weights[from_id][to_id] @ sdr_bits
+                active = np.flatnonzero(self._prev_sdrs[from_id].bits)
+                if active.size:
+                    # Sum only columns corresponding to active source bits.
+                    # Equivalent to W @ sdr_bits but avoids O(n²) dense matmul.
+                    biases[to_id] += self._weights[from_id][to_id][:, active].sum(axis=1)
 
         return biases
 
@@ -260,16 +262,21 @@ class HeterarchicalLayer(LayerBase):
                 mask = self._masks[from_id][to_id]   # (n, n) bool
                 w = self._weights[from_id][to_id]     # (n, n) float32
 
-                # Co-active outer product: coactive[i, j] = bits_to[i] & bits_from[j]
-                coactive: np.ndarray = np.outer(bits_to, bits_from)  # (n, n) bool
+                active_from = np.flatnonzero(bits_from)
+                active_to = np.flatnonzero(bits_to)
 
-                # Potentiate co-active synapses within pool
-                potentiate = mask & coactive
-                w[potentiate] += self._config.lateral_lr
+                # Decay all in-pool synapses first
+                w[mask] -= self._config.lateral_decay
 
-                # Decay non-coactive synapses within pool (not globally)
-                decay_mask = mask & ~coactive
-                w[decay_mask] -= self._config.lateral_decay
+                # Potentiate co-active in-pool pairs.
+                # Using np.ix_ over active indices avoids the O(n²) outer product;
+                # at 2% sparsity this is ~40×40 = 1 600 pairs vs 2048²= 4 M.
+                if active_from.size and active_to.size:
+                    coactive_ix = np.ix_(active_to, active_from)
+                    # Undo decay and add lr only for in-pool co-active synapses
+                    w[coactive_ix] += (
+                        self._config.lateral_lr + self._config.lateral_decay
+                    ) * mask[coactive_ix]
 
                 np.clip(w, 0.0, 1.0, out=w)
 
@@ -281,7 +288,7 @@ class HeterarchicalLayer(LayerBase):
 
     def reset_weights(self) -> None:
         """Full reinitialisation: clears learned weights AND transient state."""
-        for from_id, to_dict in self._weights.items():
+        for from_id in self._weights:
             for to_id, mask in self._masks[from_id].items():
                 w = np.zeros((self._n, self._n), dtype=np.float32)
                 n_synapses = int(mask.sum())
