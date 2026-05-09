@@ -200,18 +200,12 @@ def test_learn_decays_non_coactive_weights() -> None:
 
 def test_learn_clips_weights_to_zero() -> None:
     """Decayed weights must never go below 0."""
-    layer, u0, u1 = _two_unit_layer()
-
-    # All weights near zero; a large decay should not make them negative
-    w = layer.weight_matrix("u0", "u1")
-    w[:] = 0.005  # very small
-
     cfg = HeterarchicalConfig(lateral_lr=0.01, lateral_decay=0.5, lateral_sparsity=1.0)
     layer2 = HeterarchicalLayer(n_columns=N, config=cfg, rng=np.random.default_rng(0))
     layer2.register_unit("u0")
     layer2.register_unit("u1")
     layer2.add_connection("u0", "u1")
-    layer2.weight_matrix("u0", "u1")[:] = 0.005
+    layer2.weight_matrix("u0", "u1")[:] = 0.005  # pre-set small initial weights
 
     sdr0 = _sdr([0], uid="u0")
     sdr1 = _sdr([1], uid="u1")  # no co-activity → all decay
@@ -264,9 +258,11 @@ def test_reset_clears_prev_sdrs() -> None:
     sdr1 = _sdr([2, 3], uid="u1")
     layer.update_sdrs([sdr0, sdr1])
 
-    # Confirm biases are non-zero before reset
+    # Confirm biases are non-zero before reset (weights are non-zero after init + SDRs cached)
     biases_before = layer.compute_biases()
-    # At least one unit should have non-zero bias (weights are non-zero from init)
+    assert any(np.any(b != 0.0) for b in biases_before.values()), (
+        "Expected non-zero biases after caching SDRs with non-zero weights"
+    )
 
     layer.reset()
     biases_after = layer.compute_biases()

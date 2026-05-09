@@ -124,12 +124,30 @@ class HeterarchicalLayer(LayerBase):
             Source unit — its SDR will modulate *to_id*.
         to_id:
             Target unit — receives lateral bias from *from_id*.
+
+        Raises
+        ------
+        ValueError
+            If either *from_id* or *to_id* has not been registered via
+            :meth:`register_unit`.
         """
+        if from_id not in self._weights:
+            raise ValueError(
+                f"Unit '{from_id}' is not registered. Call register_unit('{from_id}') first."
+            )
+        if to_id not in self._weights:
+            raise ValueError(
+                f"Unit '{to_id}' is not registered. Call register_unit('{to_id}') first."
+            )
+
         self._adjacency[from_id].append(to_id)
         self._reverse[to_id].append(from_id)
 
         # Sparse potential pool: each (to_col, from_col) pair connected with
-        # probability lateral_sparsity
+        # probability lateral_sparsity.
+        # TODO: replace dense boolean mask + float32 weight matrix with a CSR
+        # (scipy.sparse) representation to reduce memory from O(n²) to O(sparsity·n²).
+        # At n_columns=2048 and 12 all-to-all edges the dense layout is ~192 MB.
         mask = self._rng.random((self._n, self._n)) < self._config.lateral_sparsity
         self._masks[from_id][to_id] = mask
 
@@ -274,7 +292,12 @@ class HeterarchicalLayer(LayerBase):
         logger.debug("HeterarchicalLayer: full weight reset")
 
     def weight_matrix(self, from_id: str, to_id: str) -> np.ndarray:
-        """Return the weight matrix for edge *from_id* → *to_id* (read-only view)."""
+        """Return the weight matrix for edge *from_id* → *to_id*.
+
+        Returns a **direct reference** to the internal array — modifications
+        will affect the layer's state.  Callers that need a stable snapshot
+        should call ``.copy()`` on the result.
+        """
         return self._weights[from_id][to_id]
 
     def potential_mask(self, from_id: str, to_id: str) -> np.ndarray:

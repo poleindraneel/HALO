@@ -34,13 +34,24 @@ class CorticalUnitBase(ABC):
         ...
 
     @abstractmethod
-    def encode(self, input_data: np.ndarray) -> SDR:
+    def encode(
+        self,
+        input_data: np.ndarray,
+        *,
+        lateral_bias: np.ndarray | None = None,
+    ) -> SDR:
         """Map raw input into a Sparse Distributed Representation.
 
         Parameters
         ----------
         input_data:
             1-D float array of length *input_dim*.
+        lateral_bias:
+            Optional float array of shape ``(n_columns,)`` from a
+            :class:`~halo.layers.heterarchical.HeterarchicalLayer`.  When
+            provided, it is added to boosted overlap scores *only* for columns
+            that already have feedforward support (apical modulation, not
+            driving — Hawkins & Ahmad 2016).
 
         Returns
         -------

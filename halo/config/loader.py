@@ -73,7 +73,11 @@ def load_config(path: str | Path) -> HALOConfig:
                 f"encoder.type must be 'scalar' or 'category', got {enc_type!r}"
             )
 
-    heterarchical = HeterarchicalConfig(**raw["heterarchical"]) if "heterarchical" in raw else HeterarchicalConfig()
+    heterarchical = (
+        HeterarchicalConfig(**raw["heterarchical"])
+        if "heterarchical" in raw
+        else HeterarchicalConfig()
+    )
 
     cfg = HALOConfig(
         n_units=int(raw["n_units"]),
