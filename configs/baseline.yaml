@@ -51,6 +51,11 @@ cortical:
   permanence_decrement: 0.1   # TM Hebbian decrement
   predicted_segment_decrement: 0.0  # punishment for wrong predictions (0 = off)
 
+heterarchical:
+  lateral_lr: 0.01
+  lateral_decay: 0.001
+  lateral_sparsity: 0.1   # 10% of column pairs connected per unit edge
+
 thalamic:
   aggregation: or
 
