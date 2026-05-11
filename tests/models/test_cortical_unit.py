@@ -481,3 +481,107 @@ def test_tm_reset_clears_temporal_state() -> None:
     assert unit._active_cells == set()
     assert unit._winner_cells == set()
     assert unit._predictive_cells == set()
+
+
+# ---------------------------------------------------------------------------
+# TM sequence learning integration test — issue #21
+#
+# Config math:
+#   initial_permanence=0.21, permanence_increment=0.10, syn_perm_connected=0.50
+#   Synapses cross connected after: ceil((0.50 - 0.21) / 0.10) = 3 reinforcements
+#   activation_threshold=2, k=2 SP winners → 2 synapses per segment → threshold met
+#   → 10 repetitions is well above the required minimum.
+# ---------------------------------------------------------------------------
+
+N_SEQ = 10   # presentations of A→B before testing
+
+_SEQ_A_COLS = [0, 1]   # columns representing "A" (non-overlapping with B)
+_SEQ_B_COLS = [5, 6]   # columns representing "B"
+
+
+def _trained_unit() -> CorticalUnit:
+    """Return a unit that has seen A→B N_SEQ times."""
+    unit = _unit_tm(n_columns=20, cells_per_column=4)
+    sdr_a = _col_sdr(unit, _SEQ_A_COLS)
+    sdr_b = _col_sdr(unit, _SEQ_B_COLS)
+    for _ in range(N_SEQ):
+        unit.temporal_step(sdr_a)
+        unit.learn(sdr_a)
+        unit.temporal_step(sdr_b)
+        unit.learn(sdr_b)
+    return unit
+
+
+def test_tm_sequence_presenting_a_makes_b_predictive() -> None:
+    """After learning A→B, presenting A must produce predictive cells in B's columns.
+
+    Sequence: A (cols 0,1) → B (cols 5,6), repeated N_SEQ times.
+    After training, one more temporal_step(A) should cause
+    ``_predictive_cells`` to contain cells belonging to B's columns.
+    """
+    unit = _trained_unit()
+    n_cpc = unit._config.cells_per_column
+
+    sdr_a = _col_sdr(unit, _SEQ_A_COLS)
+    unit.temporal_step(sdr_a)
+
+    b_all_cells = set(
+        range(col * n_cpc, (col + 1) * n_cpc)
+        for col in _SEQ_B_COLS
+    )
+    b_all_cells = {c for cells in b_all_cells for c in cells}  # flatten
+
+    predicted_in_b = unit._predictive_cells & b_all_cells
+    assert predicted_in_b, (
+        "After learning A→B and presenting A, expected predictive cells in "
+        f"B's columns {_SEQ_B_COLS}, but _predictive_cells={unit._predictive_cells}"
+    )
+
+
+def test_tm_sequence_b_does_not_burst_after_learning() -> None:
+    """After learning A→B, presenting B after A must not burst B's columns.
+
+    A bursting column has ALL cells_per_column cells active.  A correctly
+    predicted column activates only the predicted subset — a strict subset.
+    """
+    unit = _trained_unit()
+    n_cpc = unit._config.cells_per_column
+
+    sdr_a = _col_sdr(unit, _SEQ_A_COLS)
+    sdr_b = _col_sdr(unit, _SEQ_B_COLS)
+
+    # Set up prediction: present A
+    unit.temporal_step(sdr_a)
+    unit.learn(sdr_a)
+
+    # Present B — should activate only predicted cells
+    unit.temporal_step(sdr_b)
+
+    for col in _SEQ_B_COLS:
+        col_cells = list(range(col * n_cpc, (col + 1) * n_cpc))
+        active_in_col = [c for c in col_cells if c in unit._active_cells]
+        assert 0 < len(active_in_col) < n_cpc, (
+            f"Column {col} burst (all {n_cpc} cells active) after learning A→B. "
+            "Expected only predicted cells to be active."
+        )
+
+
+def test_tm_sequence_untrained_unit_bursts() -> None:
+    """A unit with no training must burst B's columns when shown B (control test).
+
+    Verifies that the no-burst result in the learning test is caused by
+    learning, not by any structural property of the unit.
+    """
+    unit = _unit_tm(n_columns=20, cells_per_column=4)
+    n_cpc = unit._config.cells_per_column
+
+    sdr_b = _col_sdr(unit, _SEQ_B_COLS)
+    unit.temporal_step(sdr_b)
+
+    for col in _SEQ_B_COLS:
+        col_cells = list(range(col * n_cpc, (col + 1) * n_cpc))
+        active_in_col = [c for c in col_cells if c in unit._active_cells]
+        assert len(active_in_col) == n_cpc, (
+            f"Expected column {col} to burst on an untrained unit, "
+            f"but only {len(active_in_col)}/{n_cpc} cells active."
+        )
