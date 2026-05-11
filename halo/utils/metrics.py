@@ -22,12 +22,10 @@ def overlap_score(a: SDR, b: SDR) -> float:
     """Normalised overlap: shared_bits / min(|a|, |b|).
 
     Returns 0.0 if either SDR has no active bits.
+
+    Delegates to :meth:`~halo.core.sdr.SDR.normalized_overlap`.
     """
-    shared = a.overlap(b)
-    denom = min(int(a.bits.sum()), int(b.bits.sum()))
-    if denom == 0:
-        return 0.0
-    return float(shared) / float(denom)
+    return a.normalized_overlap(b)
 
 
 def entropy(sdrs: list[SDR]) -> float:
