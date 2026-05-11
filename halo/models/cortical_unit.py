@@ -190,32 +190,35 @@ class CorticalUnit(CorticalUnitBase):
         if active_cols.size == 0:
             return
 
-        # We need the last input to apply the learning rule.
-        # encode() must have been called in this step — use cached input.
+        # SP permanence update — requires a cached input from encode().
+        # TM learning (_adapt_segments) does NOT depend on the input and
+        # always runs, even when encode() was not called this step.
         if self._last_input is None:
-            logger.warning("%s learn() called without prior encode(); skipping", self._unit_id)
-            return
-
-        input_bool = self._last_input
-
-        for col in active_cols:
-            pool = self._potential_pool[col]          # (input_dim,) bool
-            perm = self._permanences[col]             # (input_dim,) float, view
-
-            # Increment where input active in pool, decrement elsewhere in pool
-            delta = np.where(
-                pool & input_bool,
-                self._config.syn_perm_active_inc,
-                np.where(pool, -self._config.syn_perm_inactive_dec, 0.0),
+            logger.warning(
+                "%s learn() called without prior encode(); skipping SP permanence update",
+                self._unit_id,
             )
-            perm += delta
-            np.clip(perm, 0.0, self._config.syn_perm_max, out=perm)
-            # Trim near-zero permanences (NeoCortexAPI SynPermTrimThreshold)
-            perm[perm < self._config.syn_perm_trim_threshold] = 0.0
+        else:
+            input_bool = self._last_input
 
-        # Homeostatic boost update every update_period steps
-        if self._step % self._config.update_period == 0:
-            self._update_boost_factors()
+            for col in active_cols:
+                pool = self._potential_pool[col]      # (input_dim,) bool
+                perm = self._permanences[col]         # (input_dim,) float, view
+
+                # Increment where input active in pool, decrement elsewhere in pool
+                delta = np.where(
+                    pool & input_bool,
+                    self._config.syn_perm_active_inc,
+                    np.where(pool, -self._config.syn_perm_inactive_dec, 0.0),
+                )
+                perm += delta
+                np.clip(perm, 0.0, self._config.syn_perm_max, out=perm)
+                # Trim near-zero permanences (NeoCortexAPI SynPermTrimThreshold)
+                perm[perm < self._config.syn_perm_trim_threshold] = 0.0
+
+            # Homeostatic boost update every update_period steps
+            if self._step % self._config.update_period == 0:
+                self._update_boost_factors()
 
         # TM learning — AdaptSegments using state cached by temporal_step()
         self._adapt_segments()
@@ -277,6 +280,13 @@ class CorticalUnit(CorticalUnitBase):
         cfg = self._config
         n_cpc = cfg.cells_per_column
         active_cols: set[int] = {int(i) for i in np.where(column_sdr.bits)[0]}
+
+        # Carry current state forward before Phase 1 so that _best_matching_cell,
+        # _best_matching_seg, and punishment all see the IMMEDIATELY preceding step's
+        # cells (not those from two steps ago, which is what happens if this update
+        # is deferred to after Phase 1).
+        self._prev_active_cells = self._active_cells
+        self._prev_winner_cells = self._winner_cells
 
         # ----------------------------------------------------------------
         # Phase 1 — ActivateCells
@@ -343,10 +353,6 @@ class CorticalUnit(CorticalUnitBase):
                     new_predicted_cols.add(cell_idx // n_cpc)
                 elif potential >= cfg.min_threshold:
                     new_matching_segs.add((cell_idx, seg_idx))
-
-        # Carry forward for learn()
-        self._prev_active_cells = self._active_cells
-        self._prev_winner_cells = self._winner_cells
 
         # Update current-step TM state
         self._active_cells = active_cells
