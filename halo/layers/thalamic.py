@@ -130,7 +130,7 @@ class ThalamicLayer(LayerBase):
         total_weight = 0.0
 
         for sdr in inputs:
-            w = (weights or {}).get(sdr.unit_id, 1.0)
+            w = 1.0 if weights is None else weights.get(sdr.unit_id, 0.0)
             accum += sdr.bits.astype(float) * w
             total_weight += w
 
