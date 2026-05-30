@@ -290,15 +290,32 @@ class CorticalConfig:
 
 @dataclass
 class ThalamicConfig:
-    """Parameters for the ThalamicLayer relay."""
+    """Parameters for the ThalamicLayer relay.
+
+    Parameters
+    ----------
+    aggregation:
+        ``"or"`` — bitwise union of all inputs (baseline, ignores reliability).
+        ``"weighted_sum"`` — reliability-weighted accumulation with top-k
+        thresholding to maintain a target output sparsity.
+    output_sparsity:
+        Fraction of output bits that should be active after ``"weighted_sum"``
+        aggregation.  Ignored in ``"or"`` mode.  Must be in ``(0, 1)``.
+        Defaults to ``0.02`` (2 %).
+    """
 
     aggregation: str  # "or" | "weighted_sum"
+    output_sparsity: float = 0.02  # target active fraction for weighted_sum
 
     def __post_init__(self) -> None:
         if self.aggregation not in _VALID_AGGREGATIONS:
             raise ValueError(
                 f"aggregation must be one of {_VALID_AGGREGATIONS}, "
                 f"got {self.aggregation!r}"
+            )
+        if not (0.0 < self.output_sparsity < 1.0):
+            raise ValueError(
+                f"output_sparsity must be in (0, 1), got {self.output_sparsity}"
             )
 
 
