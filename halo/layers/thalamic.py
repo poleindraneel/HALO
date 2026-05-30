@@ -99,7 +99,13 @@ class ThalamicLayer(LayerBase):
             SDRs to aggregate; must all have the same length *n*.
         weights:
             Mapping of ``unit_id → weight`` for ``"weighted_sum"`` mode.
-            Defaults to uniform weight 1.0 for all units if not provided.
+            Three cases:
+
+            - *None* — all units receive uniform weight 1.0 (no reliability
+              information available).
+            - dict provided, key present — unit uses its mapped weight.
+            - dict provided, key absent — unit receives weight 0.0 (not in
+              the reliability registry → suppressed, not maximally trusted).
 
         Returns
         -------

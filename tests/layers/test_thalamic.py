@@ -197,6 +197,26 @@ def test_weighted_sum_zero_weight_unit_suppressed() -> None:
     )
 
 
+def test_weighted_sum_missing_key_in_weights_suppressed() -> None:
+    """A unit absent from the weights dict is treated as weight 0.0.
+
+    Providing a partial weights dict must not silently grant maximum trust
+    to unregistered units.  Missing key → suppressed (same as weight=0.0),
+    not maximally trusted (weight=1.0).
+    """
+    n = 10
+    layer = _ws_layer(sparsity=0.2)  # k=2
+    a = _sdr([0, 1], n=n, unit_id="a")
+    b = _sdr([5, 6], n=n, unit_id="b")
+    # Only "a" is in the dict; "b" is missing → should be treated as 0.0
+    weights = {"a": 1.0}
+    result = layer.aggregate([a, b], weights=weights)
+    active = set(np.where(result.bits)[0])
+    assert active == {0, 1}, (
+        f"Unit 'b' not in weights dict should be suppressed (weight=0.0), got active={active}"
+    )
+
+
 # ---------------------------------------------------------------------------
 # process() with reliability source
 # ---------------------------------------------------------------------------
