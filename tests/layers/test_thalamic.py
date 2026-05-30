@@ -193,7 +193,6 @@ def _reliability_module(scores: dict[str, float]) -> ReliabilityModule:
     mod = ReliabilityModule(list(scores), cfg)
     # Override initial scores by applying signals
     for uid, target in scores.items():
-        delta = target - cfg.initial_score
         # Apply enough signal steps to reach target exactly
         mod._scores[uid] = target  # direct set for test setup
     return mod
