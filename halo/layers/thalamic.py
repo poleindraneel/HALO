@@ -179,8 +179,8 @@ class ThalamicLayer(LayerBase):
         """
         if k >= len(scores):
             return np.ones(len(scores), dtype=bool)
-        # argpartition gives top-k in arbitrary order; then sort for stability
-        top_indices = np.argpartition(scores, -k)[-k:]
+        # Sort by descending score, then ascending index for deterministic ties.
+        top_indices = np.lexsort((np.arange(len(scores)), -scores))[:k]
         mask = np.zeros(len(scores), dtype=bool)
         mask[top_indices] = True
         return mask
