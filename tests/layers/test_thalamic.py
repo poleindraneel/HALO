@@ -129,6 +129,24 @@ def test_weighted_sum_output_sparsity_respected() -> None:
     assert int(result.bits.sum()) == k_expected
 
 
+def test_weighted_sum_all_zero_weights_returns_empty_sdr(caplog) -> None:
+    """When every reliability weight is 0, return an all-inactive SDR.
+
+    Activating k arbitrary bits from an all-zero accumulator would introduce
+    noise with no informational basis.  Consistent with ConsensusEngine which
+    also emits an empty SDR when total_weight == 0.
+    """
+    import logging
+    n = 10
+    layer = _ws_layer(sparsity=0.2)
+    a = _sdr([0, 1], n=n, unit_id="a")
+    b = _sdr([5, 6], n=n, unit_id="b")
+    with caplog.at_level(logging.WARNING, logger="halo.layers.thalamic"):
+        result = layer.aggregate([a, b], weights={"a": 0.0, "b": 0.0})
+    assert int(result.bits.sum()) == 0, "Expected empty SDR when all weights are zero"
+    assert "total_weight=0" in caplog.text
+
+
 def test_weighted_sum_unit_id_is_thalamic() -> None:
     layer = _ws_layer()
     result = layer.aggregate([_sdr([0, 1], n=10)])

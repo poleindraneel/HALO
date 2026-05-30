@@ -134,9 +134,19 @@ class ThalamicLayer(LayerBase):
             accum += sdr.bits.astype(float) * w
             total_weight += w
 
+        # When total_weight is zero every reliability score is 0 — no unit
+        # has earned any trust.  Emitting k arbitrary bits would introduce
+        # noise with no informational basis, so return an all-inactive SDR
+        # instead.  This matches the ConsensusEngine behaviour (engine.py).
+        if total_weight == 0.0:
+            logger.warning(
+                "ThalamicLayer weighted_sum: total_weight=0 (all reliability scores zero); "
+                "returning empty SDR"
+            )
+            return SDR(bits=np.zeros(n, dtype=bool), unit_id="thalamic", timestamp=timestamp)
+
         # Normalise so scale is independent of number of units / weight sum.
-        if total_weight > 0.0:
-            accum /= total_weight
+        accum /= total_weight
 
         # Top-k thresholding to enforce output_sparsity.
         k = max(1, round(n * self._config.output_sparsity))
