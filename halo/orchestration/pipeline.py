@@ -2,15 +2,17 @@
 
 Step sequence per timestep
 --------------------------
-1. Each CorticalUnit encodes the raw input → list[SDR]
-2. HeterarchicalLayer performs lateral mixing → list[SDR]
-3. Each CorticalUnit learns from its (possibly mixed) SDR
-4. ThalamicLayer aggregates mixed SDRs → broadcast signal (single SDR)
-5. TRNGatingLayer filters per-unit mixed SDRs by population entropy → list[SDR]
-6. ConsensusEngine produces final SDR from gated per-unit SDRs
-7. Dopamine signal = overlap score between consecutive outputs
-8. ReliabilityModule updates all unit scores
-9. Increment step counter; return final SDR
+1. Each CorticalUnit encodes the raw input → list[SDR]  (Spatial Pooler)
+2. Each CorticalUnit runs Temporal Memory on its column SDR → list[SDR] (cell-level)
+3. HeterarchicalLayer caches current column SDRs for next-step lateral biases
+4. Each CorticalUnit learns from its column SDR (SP permanences + TM AdaptSegments)
+5. HeterarchicalLayer Hebbian lateral weight update
+6. ThalamicLayer aggregates column SDRs weighted by reliability → broadcast signal
+7. TRNGatingLayer filters per-unit column SDRs by population entropy → list[SDR]
+8. ConsensusEngine produces final SDR from gated per-unit SDRs
+9. Per-unit dopamine = prediction_accuracy * 2 - 1  (ties dopamine to TM quality)
+10. ReliabilityModule updates each unit's score with its own dopamine signal
+11. Increment step counter; return final SDR
 """
 
 from __future__ import annotations
@@ -28,7 +30,6 @@ from halo.layers.thalamic import ThalamicLayer
 from halo.layers.trn import TRNGatingLayer
 from halo.models.cortical_unit import CorticalUnit
 from halo.reliability.module import ReliabilityModule
-from halo.utils.metrics import overlap_score
 
 logger = logging.getLogger(__name__)
 
@@ -88,9 +89,6 @@ class HALOPipeline:
         # --- Consensus ---
         self._consensus = ConsensusEngine(config.consensus)
 
-        # Previous output for dopamine signal computation
-        self._prev_output: SDR | None = None
-
         # --- Optional encoder ---
         self._encoder: EncoderBase | None = None
         if config.encoder is not None:
@@ -135,32 +133,39 @@ class HALOPipeline:
         # 1. Compute lateral biases from previous step's SDRs (zero on step 0).
         lateral_biases = self._heterarchical.compute_biases()
 
-        # 2. Encode each unit with its lateral bias applied before inhibition.
-        #    Each unit learns from its own SDR — not a union with other units.
+        # 2. SP encode: each unit maps the input to a column-level SDR.
         raw_sdrs: list[SDR] = [
             unit.encode(input_data, lateral_bias=lateral_biases.get(unit.unit_id))
             for unit in self._units
         ]
 
-        # 3. Cache current SDRs in heterarchical layer for next step's biases.
+        # 3. TM temporal_step: activate and predict cells from the column SDR.
+        #    This must come BEFORE learn() so that _winner_cells / _prev_winner_cells
+        #    are populated for _adapt_segments().
+        for unit, sdr in zip(self._units, raw_sdrs):
+            unit.temporal_step(sdr)
+
+        # 4. Cache current column SDRs in heterarchical layer for next-step biases.
         self._heterarchical.update_sdrs(raw_sdrs)
 
-        # 4. SP + TM learning: each unit learns from its own SDR.
+        # 5. SP + TM learning: each unit updates permanences and adapts segments.
         for unit, sdr in zip(self._units, raw_sdrs):
             unit.learn(sdr)
 
-        # 5. Hebbian lateral weight update.
+        # 6. Hebbian lateral weight update.
         self._heterarchical.learn(raw_sdrs)
 
-        # 6. Thalamic relay — aggregate per-unit SDRs into a broadcast signal.
+        # 7. Thalamic relay — aggregate per-unit column SDRs weighted by reliability.
         #    (Thalamic relay: Sherman & Guillery 2006)
-        _thalamic_broadcast = self._thalamic.process(raw_sdrs)
+        _thalamic_broadcast = self._thalamic.process(
+            raw_sdrs, reliability=self._reliability
+        )
 
-        # 7. TRN gates per-unit SDRs based on population entropy.
+        # 8. TRN gates per-unit column SDRs based on population entropy.
         #    (TRN-like selective inhibition: Crick 1984; Pinault 2004)
         gated = self._trn.process(raw_sdrs)
 
-        # 8. Consensus over gated per-unit SDRs weighted by reliability scores.
+        # 9. Consensus over gated per-unit SDRs weighted by reliability scores.
         scores = self._reliability.all_scores()
         if gated:
             final_sdr = self._consensus.aggregate(gated, scores)
@@ -170,25 +175,28 @@ class HALOPipeline:
                 self._config.cortical.n_columns, "consensus", self._step
             )
 
-        # 9. Dopamine signal: overlap with previous output
-        if self._prev_output is not None and self._prev_output.n == final_sdr.n:
-            dopamine = overlap_score(self._prev_output, final_sdr) * 2.0 - 1.0
-        else:
-            dopamine = 0.0
-
-        # 10. Update reliability scores (broadcast same signal to all units)
-        for uid in self._unit_ids:
-            self._reliability.update(uid, dopamine)
+        # 10. Per-unit dopamine = prediction_accuracy * 2 - 1 ∈ [-1, 1].
+        #     Units that predicted every active column get +1; all-burst units get -1.
+        #     Each unit receives its own signal — reliability diverges over time.
+        #     (Dopamine-like reinforcement: Schultz et al. 1997)
+        for unit in self._units:
+            dopamine = unit.prediction_accuracy * 2.0 - 1.0
+            self._reliability.update(unit.unit_id, dopamine)
+            logger.debug(
+                "Step %d unit %s: prediction_accuracy=%.3f dopamine=%.3f",
+                self._step,
+                unit.unit_id,
+                unit.prediction_accuracy,
+                dopamine,
+            )
         self._reliability_history.append(self._reliability.all_scores())
 
-        self._prev_output = final_sdr
         self._step += 1
 
         logger.debug(
-            "Step %d: final SDR active=%d, dopamine=%.4f",
+            "Step %d: final SDR active=%d",
             self._step,
             int(final_sdr.bits.sum()),
-            dopamine,
         )
         return final_sdr
 

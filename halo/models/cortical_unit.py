@@ -92,6 +92,22 @@ class CorticalUnit(CorticalUnitBase):
     def unit_id(self) -> str:
         return self._unit_id
 
+    @property
+    def prediction_accuracy(self) -> float:
+        """Fraction of last step's active columns that were correctly predicted.
+
+        Computed inside :meth:`temporal_step` from TM phase-1 state.
+        Returns 0.0 before the first :meth:`temporal_step` call, and 0.0
+        when no columns were active (i.e., empty SDR input).
+
+        Interpretation
+        --------------
+        - 1.0 → unit predicted every active column → high confidence temporal model
+        - 0.0 → every column burst → unit is surprised by every transition
+        - Values in (0, 1) reflect partial prediction (mixed predicted + bursting columns)
+        """
+        return self._last_prediction_accuracy
+
     def encode(self, input_data: np.ndarray, *, lateral_bias: np.ndarray | None = None) -> SDR:
         """Compute overlap scores and return the winner-take-all SDR.
 
@@ -362,6 +378,17 @@ class CorticalUnit(CorticalUnitBase):
         self._matching_segments = new_matching_segs
         self._predictive_cells = new_predictive_cells
         self._learning_seg_for_predicted = new_learning_seg_for_predicted
+
+        # Prediction accuracy for THIS step: fraction of active columns that were
+        # predicted from the PREVIOUS step (before _prev_predicted_columns is updated).
+        # Measured after Phase 1 (active_cols known) but before overwriting the
+        # previous predictions.  Used by the pipeline dopamine signal.
+        if active_cols:
+            n_correct = len(active_cols & self._prev_predicted_columns)
+            self._last_prediction_accuracy = n_correct / len(active_cols)
+        else:
+            self._last_prediction_accuracy = 0.0
+
         self._prev_predicted_columns = new_predicted_cols
 
         logger.debug(
@@ -426,6 +453,8 @@ class CorticalUnit(CorticalUnitBase):
         self._active_segments: set[tuple[int, int]] = set()    # (cell, seg_idx)
         self._matching_segments: set[tuple[int, int]] = set()  # (cell, seg_idx)
         self._prev_predicted_columns: set[int] = set()
+        # Fraction of active columns that were correctly predicted last temporal_step()
+        self._last_prediction_accuracy: float = 0.0
         # Maps winner cell → seg_idx to reinforce in learn() (None = grow new segment)
         self._learning_seg_for_winner: dict[int, int | None] = {}
         # Maps predictive cell → seg_idx that caused prediction (used next ActivateCells)
