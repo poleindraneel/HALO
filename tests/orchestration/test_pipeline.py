@@ -304,14 +304,10 @@ def test_per_unit_dopamine_uses_prediction_accuracy_not_shared_signal() -> None:
         pipeline.step(input_b)
 
     history = pipeline.get_reliability_history()
-    scores_over_time = {uid: [] for uid in pipeline._unit_ids}
-    for step_scores in history:
-        for uid, s in step_scores.items():
-            scores_over_time[uid].append(s)
-
-    # Each unit should show some variation (not flat at 0.5)
-    for uid, scores in scores_over_time.items():
-        variation = max(scores) - min(scores)
-        assert variation > 0.0, (
-            f"{uid}: reliability never changed — per-unit dopamine is not working"
-        )
+    diverged = any(
+        max(step_scores.values()) - min(step_scores.values()) > 1e-9
+        for step_scores in history
+    )
+    assert diverged, (
+        "Reliability scores never diverged across units — dopamine may still be shared"
+    )
