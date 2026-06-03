@@ -12,7 +12,6 @@ These tests verify:
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from halo.config.schema import (
     CorticalConfig,
