@@ -104,7 +104,7 @@ def test_step_returns_sdr_with_correct_n() -> None:
 
 
 def test_step_returns_valid_sdr_bits() -> None:
-    """SDR bits must be boolean and have at least one active bit."""
+    """SDR bits must be boolean; an empty consensus SDR is allowed."""
     cfg = _pipeline_config()
     pipeline = HALOPipeline(cfg)
     result = pipeline.step(_random_input())
