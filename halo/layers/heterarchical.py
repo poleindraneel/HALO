@@ -363,7 +363,7 @@ class HeterarchicalLayer(LayerBase):
                         row_cols = edge.indices[start:end]
                         active_mask = bits_from[row_cols]
                         if active_mask.any():
-                            edge.data[start:end][active_mask] += delta
+                            edge.data[start:end] += delta * active_mask
 
                 # Step 3 — clip
                 np.clip(edge.data, 0.0, 1.0, out=edge.data)
