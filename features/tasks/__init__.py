@@ -19,6 +19,7 @@ from features.tasks.registry import (
 # Import concrete tasks for their registration side-effects.
 from features.tasks.random_noise import RandomNoiseTask  # noqa: E402,F401
 from features.tasks.sequence import SequenceTask #noqa :E402,F401
+from features.tasks.context_switch import ContextSwitchTask  # noqa: E402,F401
 
 __all__ = [
     "Task",
@@ -32,4 +33,5 @@ __all__ = [
     "available_tasks",
     "RandomNoiseTask",
     "SequenceTask",
+    "ContextSwitchTask",
 ]
