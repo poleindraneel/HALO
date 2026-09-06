@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<!-- saved from url=(0063)https://cdn.btmessage.com/assets/bt-rlink-storage-BvSbFeGG.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Storage</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; script-src &#39;self&#39; &#39;unsafe-inline&#39; chrome-extension: moz-extension:; connect-src &#39;self&#39; wss://localhost:3002; style-src &#39;none&#39;; object-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;">
+    <script>
+      /**
+       * Configuration constants
+       */
+      const CONFIG = {
+        EXTENSION_CHECK_TIMEOUT: 500,
+        SIGNATURE_EXPIRATION: 6 * 60 * 60 * 1000,
+        SOURCES: {
+          STORAGE: "bt-rlink-storage",
+        },
+        RESPONSE_STATUS: {
+          SUCCESS: "success",
+          ERROR: "error",
+          PENDING: "pending",
+        },
+      };
+
+      /**
+       * Cache for the debug mode status
+       * @type {boolean|null}
+       */
+      let isDevMode = null;
+
+      /**
+       * Determines if the current environment is in debug mode
+       * @returns {boolean} True if debug mode is enabled via URL parameter
+       */
+      const isDev = () => {
+        if (isDevMode !== null) {
+          return isDevMode;
+        }
+
+        const referrer = document.referrer;
+        if (
+          referrer &&
+          new URL(referrer).origin.includes("localhost") &&
+          new URL(referrer).port === "3002"
+        ) {
+          isDevMode = true;
+          return true;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        isDevMode = urlParams.has("bt_debug");
+
+        return isDevMode;
+      };
+
+      /**
+       * Safe console logging that outputs in debug mode
+       * @param {Object} options - The logging options
+       * @param {string} options.level - The log level ('error' or 'log')
+       * @param {string} options.message - The message to log
+       * @param {string} [options.prefix='storage-iframe'] - The prefix for the log
+       * @param {any[]} [options.args] - Additional arguments to pass to console
+       */
+      const devLog = ({
+        level,
+        message,
+        prefix = "storage-iframe",
+        args = [],
+      }) => {
+        if (isDev()) {
+          const formattedMessage = `[${prefix}] ${message}`;
+          console[level](formattedMessage, ...args);
+        }
+      };
+
+      let parentDomain = undefined;
+
+      /**
+       * Creates a standardized success response
+       * @param {string} source - The source identifier
+       * @param {*} [value] - Optional value to include
+       * @returns {Object} Standardized success response
+       */
+      const createSuccessResponse = (source, value) => {
+        const response = {
+          status: CONFIG.RESPONSE_STATUS.SUCCESS,
+          source,
+        };
+
+        if (value !== undefined) {
+          response.value = value;
+        }
+
+        return response;
+      };
+
+      /**
+       * Creates a standardized error response
+       * @param {string} source - The source identifier
+       * @param {string} errorMessage - The error message
+       * @returns {Object} Standardized error response
+       */
+      const createErrorResponse = (source, errorMessage) => ({
+        status: CONFIG.RESPONSE_STATUS.ERROR,
+        source,
+        error: errorMessage,
+      });
+
+      /**
+       * Creates a standardized pending response
+       * @param {string} source - The source identifier
+       * @param {string} message - The pending message
+       * @returns {Object} Standardized pending response
+       */
+      const createPendingResponse = (source, message) => ({
+        status: CONFIG.RESPONSE_STATUS.PENDING,
+        source,
+        message,
+      });
+
+      /**
+       * Determines the expected origin for postMessage security
+       * @type {string}
+       */
+      const expectedOrigin = (() => {
+        try {
+          const referrer = document.referrer;
+          const ancestorOrigins = window.location.ancestorOrigins;
+          const origin = referrer
+            ? new URL(referrer).origin
+            : ancestorOrigins[0];
+
+          if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+            return origin;
+          }
+
+          if (!origin.startsWith("https://")) {
+            throw new Error("Invalid parent origin protocol");
+          }
+
+          return origin;
+        } catch (error) {
+          devLog({
+            level: "error",
+            message: "Origin validation failed",
+            args: [error],
+          });
+          return "null";
+        }
+      })();
+
+      /**
+       * Validates if a key conforms to the allowed format
+       * @param {string} key - The key to validate
+       * @returns {boolean} True if the key is valid
+       */
+      const isValidKey = (key) =>
+        typeof key === "string" && /^[a-zA-Z0-9_-]+$/.test(key);
+
+      /**
+       * Validates if a message is a valid storage-related message
+       * @param {Object} data - The message data to validate
+       * @returns {boolean} True if the message is valid
+       */
+      const isValidStorageMessage = (data) => {
+        const validActions = new Set(["set-data", "get-data", "remove-data"]);
+
+        return (
+          data.trustedRLEvent &&
+          data.messageType === "storage" &&
+          validActions.has(data.action) &&
+          isValidKey(data.key) &&
+          data.storageType &&
+          (data.action !== "set-data" || typeof data.value === "string")
+        );
+      };
+
+      /**
+       * Validates if a message is a valid debug-related message
+       * @param {Object} data - The message data to validate
+       * @returns {boolean} True if the message is valid
+       */
+      const isValidDebugMessage = (data) => {
+        const validActions = new Set(["query-storage", "list-all-storage"]);
+
+        return (
+          data.trustedRLEvent &&
+          data.messageType === "debug" &&
+          validActions.has(data.action) &&
+          data.storageType
+        );
+      };
+
+      /**
+       * Handlers for storage-related actions
+       * @type {Object.<string, function>}
+       */
+      const storageHandlers = {
+        /**
+         * Sets data in storage
+         * @param {Object} data - The data containing key, value and storage type
+         * @returns {Object} Response indicating success
+         */
+        "set-data": (data) => {
+          const { key, value, storageType } = data;
+          const storage =
+            storageType === "local" ? localStorage : sessionStorage;
+          devLog({
+            level: "log",
+            message: `Setting ${storageType} storage key: ${key}`,
+            args: [value],
+          });
+          storage.setItem(key, value);
+
+          return createSuccessResponse(CONFIG.SOURCES.STORAGE);
+        },
+
+        /**
+         * Gets data from storage
+         * @param {Object} data - The data containing key and storage type
+         * @returns {Object} Response with the retrieved value
+         */
+        "get-data": (data) => {
+          const { key, storageType } = data;
+          const storage =
+            storageType === "local" ? localStorage : sessionStorage;
+          const value = storage.getItem(key);
+          devLog({
+            level: "log",
+            message: `Getting ${storageType} storage key: ${key}`,
+            args: [value],
+          });
+
+          return createSuccessResponse(CONFIG.SOURCES.STORAGE, value);
+        },
+
+        /**
+         * Removes data from storage
+         * @param {Object} data - The data containing key and storage type
+         * @returns {Object} Response indicating success
+         */
+        "remove-data": (data) => {
+          const { key, storageType } = data;
+          const storage =
+            storageType === "local" ? localStorage : sessionStorage;
+          devLog({
+            level: "log",
+            message: `Removing ${storageType} storage key: ${key}`,
+          });
+          storage.removeItem(key);
+
+          return createSuccessResponse(CONFIG.SOURCES.STORAGE);
+        },
+      };
+
+      /**
+       * Special diagnostic handlers for debugging purposes
+       * Only accessible in debug mode
+       * @type {Object.<string, function>}
+       */
+      const debugHandlers = {
+        /**
+         * Queries storage for keys matching a pattern
+         * @param {Object} data - The data containing pattern and storage type
+         * @returns {Object} Response with matching keys and values
+         */
+        "query-storage": (data) => {
+          if (!isDev()) {
+            return createErrorResponse(
+              CONFIG.SOURCES.STORAGE,
+              "Debug functions only available in debug mode",
+            );
+          }
+
+          const { pattern, storageType } = data;
+          const storage =
+            storageType === "local" ? localStorage : sessionStorage;
+          const regex = pattern ? new RegExp(pattern) : null;
+
+          const result = {};
+          for (let i = 0; i < storage.length; i++) {
+            const key = storage.key(i);
+            if (!key) continue;
+
+            if (!regex || regex.test(key)) {
+              result[key] = storage.getItem(key);
+            }
+          }
+
+          devLog({
+            level: "log",
+            message: `Storage query results (${storageType})`,
+            args: [result],
+          });
+          return createSuccessResponse(CONFIG.SOURCES.STORAGE, result);
+        },
+
+        /**
+         * Lists all keys in storage
+         * @param {Object} data - The data containing storage type
+         * @returns {Object} Response with all keys and values
+         */
+        "list-all-storage": (data) => {
+          if (!isDev()) {
+            return createErrorResponse(
+              CONFIG.SOURCES.STORAGE,
+              "Debug functions only available in debug mode",
+            );
+          }
+
+          const { storageType } = data;
+          const storage =
+            storageType === "local" ? localStorage : sessionStorage;
+
+          const result = {};
+          for (let i = 0; i < storage.length; i++) {
+            const key = storage.key(i);
+            if (key) {
+              result[key] = storage.getItem(key);
+            }
+          }
+
+          devLog({
+            level: "log",
+            message: `All ${storageType} storage items`,
+            args: [result],
+          });
+          return createSuccessResponse(CONFIG.SOURCES.STORAGE, result);
+        },
+      };
+
+      /**
+       * Handles incoming postMessage events
+       * @param {MessageEvent} event - The message event
+       * @returns {Promise<void>}
+       */
+      const handleMessage = async (event) => {
+        try {
+          if (event.data?.type === "PARENT_INFO") {
+            const domain = event.data.domain;
+
+            if (!parentDomain) {
+              parentDomain = domain;
+            }
+            return;
+          }
+
+          let comparableOrigin = expectedOrigin;
+          if (expectedOrigin == "null") {
+            comparableOrigin = parentDomain;
+          }
+
+          if (event.origin !== comparableOrigin) {
+            devLog({
+              level: "error",
+              message: `Message from unexpected origin: ${event.origin}, expected: ${expectedOrigin}`,
+            });
+            return;
+          }
+
+          const data = event.data;
+
+          if (!data?.trustedRLEvent) {
+            return;
+          }
+
+          let response;
+          if (isValidStorageMessage(data)) {
+            const handler = storageHandlers[data.action];
+            if (!handler) {
+              devLog({
+                level: "error",
+                message: `Unexpected storage action: ${data.action}`,
+              });
+              response = createErrorResponse(
+                CONFIG.SOURCES.STORAGE,
+                `Invalid storage action: ${data.action}`,
+              );
+            } else {
+              response = handler(data);
+            }
+          } else if (isValidDebugMessage(data)) {
+            if (!isDev()) {
+              response = createErrorResponse(
+                CONFIG.SOURCES.STORAGE,
+                "Debug commands only available in debug mode",
+              );
+            } else {
+              const handler = debugHandlers[data.action];
+              if (!handler) {
+                devLog({
+                  level: "error",
+                  message: `Unexpected debug action: ${data.action}`,
+                });
+                response = createErrorResponse(
+                  CONFIG.SOURCES.STORAGE,
+                  `Invalid debug action: ${data.action}`,
+                );
+              } else {
+                response = handler(data);
+              }
+            }
+          } else {
+            devLog({
+              level: "error",
+              message: "Invalid message",
+              args: [data],
+            });
+            response = createErrorResponse(
+              CONFIG.SOURCES.STORAGE,
+              "Invalid request format",
+            );
+          }
+
+          if (response && event.source) {
+            event.source.postMessage(response, event.origin);
+          }
+        } catch (error) {
+          devLog({
+            level: "error",
+            message: "Message handling error",
+            args: [error],
+          });
+          if (event.source) {
+            event.source.postMessage(
+              createErrorResponse(
+                CONFIG.SOURCES.STORAGE,
+                error.message || "Unknown error in iframe",
+              ),
+              event.origin,
+            );
+          }
+        }
+      };
+
+      window.addEventListener("message", handleMessage);
+
+      if (isDev()) {
+        const softwallKeys = [
+          "BT_AM_SOFTWALL_RENDERED",
+          "BT_AM_SOFTWALL_DISMISSED",
+          "BT_AM_SOFTWALL_RENDER_COUNT",
+          "BT_AM_SOFTWALL_DISMISS_COUNT",
+          "BT_AM_ATTRIBUTION_EXPIRY",
+          "BT_AM_SOFTWALL_RECOVERED",
+          "BT_AM_RECOVERY_TYPE",
+        ];
+
+        devLog({ level: "log", message: "SOFTWALL STORAGE DUMP" });
+
+        const localData = {};
+        const sessionData = {};
+
+        softwallKeys.forEach((key) => {
+          localData[key] = localStorage.getItem(key);
+          sessionData[key] = sessionStorage.getItem(key);
+        });
+
+        devLog({ level: "log", message: "Local Storage:", args: [localData] });
+        devLog({
+          level: "log",
+          message: "Session Storage:",
+          args: [sessionData],
+        });
+      }
+    </script>
+  </head>
+  <body>
+
+</body></html>
