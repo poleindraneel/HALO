@@ -1,0 +1,92 @@
+\thispagestyle{empty}
+%\pdfbookmark[0]{Titelblatt}{title}
+
+%*******************************************************
+% Titlepage
+%*******************************************************
+%%%
+%%% title page (german)
+%%%
+\thispagestyle{empty}
+\pdfbookmark[0]{Titelblatt}{title}
+\begin{titlepage}
+
+
+  \vspace*{-3,5cm}
+  \begin{center}
+    \includegraphics[width=7.7cm]{Figures/fra-uas_logo} \\ 
+  \end{center}
+
+  \begin{center}
+    \vspace{0.1cm}
+    \LARGE \textbf{Frankfurt University\\ of Applied Sciences}\\
+    \vspace{0.4cm}
+    \Large -- Faculty of Computer Science and Engineering --
+  \end{center}
+
+  \vfill
+
+  \begin{center}
+    \huge \textbf{\ThesisTitle}   %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen 
+  \end{center} 
+
+  \vfill
+
+  \ifdefined\ThesisLanguageIsEnglish 
+  \begin{center}
+    \Large Thesis submitted in order to obtain the academic degree\\
+    \vspace{0.3cm}
+    \Large \ThesisDegree   %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen 
+  \end{center}
+  \else
+  \begin{center}
+    \Large Abschlussarbeit zur Erlangung des akademischen Grades\\
+    \vspace{0.3cm}
+    \Large \ThesisDegree   %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen 
+  \end{center}
+  \fi
+
+  \vfill
+
+  \ifdefined\ThesisLanguageIsEnglish 
+  \begin{center}
+    \Large submitted on \ThesisDeliveryDate\ on\\   %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen
+    \vspace{0.3cm}
+    \Large \textbf{\myName}\\
+    \vspace{0.3cm}
+    \normalsize Student ID: \myStudentId   %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen
+  \end{center}
+  \else
+  \begin{center}
+    \Large vorgelegt am \ThesisDeliveryDate\ von\\   %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen
+    \vspace{0.3cm}
+    \Large \textbf{\myName}\\
+    \vspace{0.3cm}
+    \normalsize Matrikelnummer: \myStudentId   %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen
+  \end{center}
+  \fi
+
+  \vfill
+
+  \ifdefined\ThesisLanguageIsEnglish 
+  \begin{center}
+    \begin{tabular}{lll}
+      First Supervisor    & : & \Supervisor \\     %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen
+      Second Supervisor & : & \CoSupervisor\\    %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen
+    \end{tabular}
+  \end{center} 
+  \else
+  \begin{center}
+    \begin{tabular}{lll}
+      Referent    & : & \Supervisor \\     %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen
+      Korreferent & : & \CoSupervisor\\    %%%%% >>>>> Bitte in TeXFiles/000_Settings eintragen
+    \end{tabular}
+  \end{center} 
+  \fi
+
+\newpage
+
+
+  
+
+\end{titlepage}

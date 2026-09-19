@@ -1,0 +1,18 @@
+\babel@toc {american}{}\relax 
+\babel@toc {american}{}\relax 
+\contentsline {section}{\numberline {0.1}Testsektion}{2}{section.0.1}%
+\contentsline {subsection}{\numberline {0.1.1}Testsubsektion}{2}{subsection.0.1.1}%
+\contentsline {chapter}{\numberline {1}Einführung}{4}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Analyse}{4}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Trends}{4}{subsection.1.1.1}%
+\contentsline {chapter}{\numberline {2}Biological Foundation}{5}{chapter.2}%
+\contentsline {chapter}{\numberline {3}Zielstellung}{6}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Forschungsfrage}{6}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Szenarien}{6}{section.3.2}%
+\contentsline {chapter}{\numberline {4}Entwickelte Methode: Supereffiziente Methode zur Erstellung von optimierten xyz}{7}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Verfahren A: ein neues Verfahren zur Steuerung von ...}{7}{section.4.1}%
+\contentsline {chapter}{\numberline {5}Evaluation der Methode}{9}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Ergebnisse}{10}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Zusammenfassung und Ausblick}{11}{chapter.7}%
+\contentsline {chapter}{\numberline {A}Programmcode}{12}{appendix.A}%
+\contentsline {chapter}{Bibliography}{15}{appendix*.9}%

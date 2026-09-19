@@ -1,0 +1,26 @@
+%*******************************************************
+% Non Disclosure Notice
+%*******************************************************
+
+\ifdefstring{\CompanyName}{NoCompanyInvolved}{}{
+\ifdefined\ThesisLanguageIsEnglish
+\chapter*{Non-Disclosure Notice}
+\thispagestyle{empty}
+This scientific thesis contains information of the company \CompanyName. The disclosure or
+unauthorized use of this thesis as a whole or in parts is prohibited. The prohibition shall only
+apply to information pertaining to the company \CompanyName. Any other exceptions require the
+written consent of \CompanyName.
+\medskip
+\else
+\chapter*{Sperrvermerk}
+\thispagestyle{empty}
+Die Vorliegende Arbeit beinhaltet vertrauliche Informationen des Unternehmens \CompanyName. 
+Die Weitergabe oder Verwendung der Arbeit oder einzelner Informationen daraus ist in jeglicher
+Form untersagt. Dieses Verbot gilt nicht für Informationen, die weder aus dem Unternehmen \CompanyName\ stammen noch diese betreffen. Sonstige Ausnahmen bedürfen der schriftlichen
+Genehmigung des Unternehmens \CompanyName.
+\medskip
+\fi
+
+}
+
+

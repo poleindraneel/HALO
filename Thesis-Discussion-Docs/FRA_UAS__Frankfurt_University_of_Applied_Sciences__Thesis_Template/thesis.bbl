@@ -1,0 +1,116 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global/global}
+    \entry{friese_handbuch_2020}{book}{}{}
+      \name{author}{4}{}{%
+        {{hash=d3f555323f0d8aa46ce9dbfc4bd1b972}{%
+           family={Friese},
+           familyi={F\bibinitperiod},
+           given={Heidrun},
+           giveni={H\bibinitperiod}}}%
+        {{hash=1d85ec8a8b4c297107541e9a40a9092e}{%
+           family={Nolden},
+           familyi={N\bibinitperiod},
+           given={Marcus},
+           giveni={M\bibinitperiod}}}%
+        {{hash=db62ed345d6f391887e9d007edb121dd}{%
+           family={Rebane},
+           familyi={R\bibinitperiod},
+           given={Gala},
+           giveni={G\bibinitperiod}}}%
+        {{hash=71ac6df11f078007a3976bf03b050628}{%
+           family={Schreiter},
+           familyi={S\bibinitperiod},
+           given={Miriam},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {de}%
+      }
+      \list{publisher}{1}{%
+        {Springer-Verlag}%
+      }
+      \strng{namehash}{f0228b66c82d4ad62d295d5731fc688a}
+      \strng{fullhash}{4114c3569d75e13b3a5a0f41d1e2b6e6}
+      \strng{fullhashraw}{4114c3569d75e13b3a5a0f41d1e2b6e6}
+      \strng{bibnamehash}{f0228b66c82d4ad62d295d5731fc688a}
+      \strng{authorbibnamehash}{f0228b66c82d4ad62d295d5731fc688a}
+      \strng{authornamehash}{f0228b66c82d4ad62d295d5731fc688a}
+      \strng{authorfullhash}{4114c3569d75e13b3a5a0f41d1e2b6e6}
+      \strng{authorfullhashraw}{4114c3569d75e13b3a5a0f41d1e2b6e6}
+      \field{sortinit}{F}
+      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Mit der Entwicklung des Web 2.0. sind digitale Medien und Netzwerke zum Teil unseres Alltags geworden. Von Facebook und Twitter zu YouTube und Blogspot: Soziale, kulturelle, religiöse, ökonomische und politische Räume entwickeln sich mittlerweile auch im weltumspannenden Netz, erlauben die Verständigung über die gegenwärtige Situation und lassen die einstige Unterscheidung zwischen ‚online und offline-Welten‘, dem ‚virtuellen‘ und dem ‚realen, physischen‘ Raum obsolet werden. Diese digitalen Räume werden inzwischen nicht mehr als abgegrenzt betrachtet, sondern vielmehr als Kontinuum sozialer Felder verstanden, die von unterschiedlichen Praktiken und transnationaler Kommunikation gekennzeichnet sind.}
+      \field{isbn}{978-3-658-08357-1}
+      \field{month}{3}
+      \field{note}{Google-Books-ID: rRDUDwAAQBAJ}
+      \field{title}{Handbuch {Soziale} {Praktiken} und {Digitale} {Alltagswelten}}
+      \field{year}{2020}
+      \keyw{Social Science / Media Studies,Social Science / Sociology / General,Social Science / Sociology of Religion}
+    \endentry
+    \entry{oneclickVDIUnd2019}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=c72772e8853acf38054708c98e89a9b5}{%
+           family={{oneclick}},
+           familyi={o\bibinitperiod}}}%
+      }
+      \strng{namehash}{c72772e8853acf38054708c98e89a9b5}
+      \strng{fullhash}{c72772e8853acf38054708c98e89a9b5}
+      \strng{fullhashraw}{c72772e8853acf38054708c98e89a9b5}
+      \strng{bibnamehash}{c72772e8853acf38054708c98e89a9b5}
+      \strng{authorbibnamehash}{c72772e8853acf38054708c98e89a9b5}
+      \strng{authornamehash}{c72772e8853acf38054708c98e89a9b5}
+      \strng{authorfullhash}{c72772e8853acf38054708c98e89a9b5}
+      \strng{authorfullhashraw}{c72772e8853acf38054708c98e89a9b5}
+      \field{sortinit}{o}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{day}{5}
+      \field{langid}{ngerman}
+      \field{month}{6}
+      \field{title}{VDI und DaaS: Vor- und Nachteile}
+      \field{urlday}{23}
+      \field{urlmonth}{4}
+      \field{urlyear}{2023}
+      \field{year}{2019}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://oneclick-cloud.com/de/blog/trends/vdi-und-daas-vor-und-nachteile/
+      \endverb
+      \verb{url}
+      \verb https://oneclick-cloud.com/de/blog/trends/vdi-und-daas-vor-und-nachteile/
+      \endverb
+    \endentry
+  \enddatalist
+  \missing{douglas1989}
+  \missing{douglas2004}
+  \missing{rudy2011}
+  \missing{shepherd2018}
+  \missing{sherman1998}
+  \missing{sherman2013}
+  \missing{white1989}
+\endrefsection
+\endinput
+
