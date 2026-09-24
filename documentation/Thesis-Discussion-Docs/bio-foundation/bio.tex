@@ -126,71 +126,72 @@ The whole of this circuit  its layers and cells, the direction and class of each
                minimum height=1cm, text width=2.4cm, align=center, font=\small},
   trn/.style={draw, rectangle, rounded corners, minimum width=1.6cm,
               minimum height=2.2cm, text width=1.4cm, align=center, font=\small},
-  driver/.style={-{Stealth[length=3mm]}, line width=1.1pt},
-  modulator/.style={-{Stealth[length=2.5mm]}, line width=0.5pt, gray},
-    inhib/.style={-{Bar[width=3mm]}, line width=0.9pt, blue!70!black},
-      spine/.style={-{Stealth[length=2mm]}, line width=0.7pt},
-        feedback/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, dashed},
+  driver/.style={-{Stealth[length=3mm]}, line width=1.3pt},
+  modulator/.style={-{Stealth[length=2.5mm]}, line width=0.6pt, gray},
+  inhib/.style={-{Bar[width=3mm]}, line width=0.9pt, blue!70!black},
+  feedback/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, dashed},
+  stepnum/.style={circle, draw, fill=white, inner sep=1pt,
+               font=\scriptsize\bfseries, minimum size=5.5mm},
 ]
-  % - Cortical column: five laminae, L1 (top) to L6 (bottom) -
-  \node[lamina] (L1)  at (0, 8.00) {\textbf{L1}  apical tufts};
-  \node[lamina] (L23) at (0, 7.08) {\textbf{L2/3}  associative};
-  \node[lamina] (L4)  at (0, 6.16) {\textbf{L4}  granular input};
-  \node[lamina] (L5)  at (0, 5.24) {\textbf{L5}  deep output};
-  \node[lamina] (L6)  at (0, 4.32) {\textbf{L6}  corticothalamic};
+  % ---- Cortical column: L1 (top) to L6 (bottom) ----
+  \node[lamina] (L1)  at (0, 8.00) {\textbf{L1} --- apical tufts};
+  \node[lamina] (L23) at (0, 7.08) {\textbf{L2/3} --- associative};
+  \node[lamina] (L4)  at (0, 6.16) {\textbf{L4} --- granular input};
+  \node[lamina] (L5)  at (0, 5.24) {\textbf{L5} --- deep output};
+  \node[lamina] (L6)  at (0, 4.32) {\textbf{L6} --- corticothalamic};
 
-  % - Thalamus: two relays and the TRN gate -
-  \node[thal] (FO) at (-1.4, 1.6) {\textbf{First-order relay}\\\footnotesize (LGN, VPM)};
-  \node[thal] (HO) at ( 1.7, 1.6) {\textbf{Higher-order relay}\\\footnotesize (pulvinar, Po)};
+  % ---- Thalamus + sources ----
+  \node[thal] (FO)  at (-1.4, 1.6) {\textbf{First-order relay}\\\footnotesize (LGN, VPM)};
+  \node[thal] (HO)  at ( 1.7, 1.6) {\textbf{Higher-order relay}\\\footnotesize (pulvinar, Po)};
   \node[trn]  (TRN) at (-4.2, 1.6) {\textbf{TRN}\\\footnotesize gate};
-
-  % - Prethalamic driver source -
-  \node[thal, fill=black!5] (PRE) at (-1.4, -0.4) {\textbf{Prethalamic}\\\footnotesize (retina, lemniscus)};
-    % - External nodes: feedback source and transthalamic target -
+  \node[thal, fill=black!5] (PRE) at (-1.4, -0.6) {\textbf{Sensory input}\\\footnotesize (retina, lemniscus)};
+  \node[thal, fill=black!5] (B)   at ( 5.6, 1.6) {\textbf{L4 of area B}\\\footnotesize (next area)};
   \node[lamina, minimum width=3cm, text width=2.6cm, fill=black!5]
         (HI) at (6.2, 7.54) {\textbf{Higher cortical area}\\\footnotesize (top-down)};
-  \node[thal, fill=black!5]
-        (B) at (5.6, 1.6) {\textbf{L4 of area B}\\\footnotesize (transthalamic target)};
-  % - DRIVER connections (thick solid) -
-  \draw[driver] (PRE) -- (FO);                          % prethalamic -> FO relay
-  \draw[driver] (FO.north) to[out=90, in=180] (L4.west);   % FO relay -> L4 (ascending drive)
-  \draw[driver] (FO.west) -- (TRN.south east);          % relay collateral -> TRN
-  \draw[driver] (L5.east) to[out=0, in=90] (HO.north);  % L5 -> HO relay (column output)
-  \draw[driver] (HO.east) -- (B.west);                  % HO relay -> L4 of area B (transthalamic)
-    % - MODULATOR connections (thin, descending feedback) -
-    \draw[modulator] (L6.south) to[out=270, in=100] (FO.north);       % L6 -> FO relay
-  \draw[modulator] (L6.south east) to[out=280, in=100] (HO.north);  % L6 -> HO relay
-  \draw[modulator] (L6.west) to[out=180, in=90] (TRN.north);        % L6 -> TRN
-    % - INHIBITORY gating (TRN -> FO relay) -
-    \draw[inhib] (TRN.south east) -- ([yshift=-3mm]FO.west);   % TRN gates the relay
-      % - INTRACOLUMNAR spine (canonical flow, inside the column) -
-   % - INTRACOLUMNAR processing (abstracted; sequence given in text) -
-    \draw[spine] ([xshift=5mm]L4.west) -- ([xshift=5mm]L6.west)
-        node[midway, left=2pt, font=\scriptsize, align=center] {canonical\\flow};
-  \draw[spine, densely dotted] ([xshift=-5mm]L6.east) -- ([xshift=-5mm]L4.east)
-        node[midway, right=2pt, font=\scriptsize] {\,L6$\to$L4};
-      % - TOP-DOWN feedback (dashed; driver/modulator class undetermined) -
-  \draw[feedback] (HI.south) to[out=270, in=0] (L1.east);   % higher area -> L1 apical tufts
-    % - LEGEND -
+
+  % ==== ASCENDING PATH — thick, numbered, going UP (left side) ====
+  \draw[driver] (PRE) -- (FO) node[stepnum, midway, right=2mm] {1};
+  \draw[driver] (FO.north) to[out=90, in=180] (L4.west) node[stepnum, pos=0.55] {2};
+  \draw[driver] ([xshift=-1.6cm]L4.north) -- ([xshift=-1.6cm]L23.south)
+        node[stepnum, midway, left=1mm] {3};
+  \draw[driver] ([xshift=-1.9cm]L23.north) to[out=90,in=180] ([xshift=-2.2cm]L5.west)
+        node[stepnum, pos=0.5, left=1mm] {4};
+  \draw[driver] ([xshift=-1.6cm]L5.north) -- ([xshift=-1.6cm]L6.south)
+        node[stepnum, midway, left=1mm] {5};
+
+  % ==== DESCENDING OUTPUT — thick driver, L5 -> HO -> next area ====
+  \draw[driver] (L5.east) to[out=0, in=90] (HO.north) node[stepnum, pos=0.55] {6};
+  \draw[driver] (HO.east) -- (B.west) node[stepnum, midway, above] {7};
+
+  % ==== DESCENDING CONTROL — thin grey modulator (right lane) ====
+  \draw[modulator] (L6.south) to[out=270, in=100] (FO.north);
+  \draw[modulator] (L6.south east) to[out=280, in=100] (HO.north);
+  \draw[modulator] (L6.west) to[out=180, in=90] (TRN.north);
+
+  % ==== TRN gate (inhibitory) ====
+  \draw[inhib] (TRN.south east) -- ([yshift=-3mm]FO.west);
+
+  % ==== TOP-DOWN feedback (dashed, separate) ====
+  \draw[feedback] (HI.south) to[out=270, in=0] (L1.east);
+
+  % ==== LEGEND ====
   \node[draw, rounded corners, align=left, font=\scriptsize,
-        anchor=north west] (leg) at (3.6, 0.3) {%
-    \tikz{\draw[driver] (0,0)--(0.7,0);} \ driver (information)\\[2pt]
-    \tikz{\draw[modulator] (0,0)--(0.7,0);} \ modulator (gain/state)\\[2pt]
-    \tikz{\draw[inhib] (0,0)--(0.7,0);} \ inhibitory (TRN gate)\\[2pt]
-    \tikz{\draw[feedback] (0,0)--(0.7,0);} \ top-down feedback (class open)\\[2pt]
-    \tikz{\draw[spine, densely dotted] (0,0)--(0.7,0);} \ intracolumnar
+        anchor=north west] (leg) at (3.4, 0.4) {%
+    \tikz{\draw[driver] (0,0)--(0.7,0);} \ \textbf{1--7} ascending drive \& output (driver)\\[2pt]
+    \tikz{\draw[modulator] (0,0)--(0.7,0);} \ L6 modulator (gain/state)\\[2pt]
+    \tikz{\draw[inhib] (0,0)--(0.7,0);} \ TRN gate (inhibitory)\\[2pt]
+    \tikz{\draw[feedback] (0,0)--(0.7,0);} \ top-down feedback (class open)
   };
 \end{tikzpicture}
 \caption[The cortico-thalamo-cortical loop]{%
-  The cortico-thalamo-cortical loop and the canonical cortical column.
-  A first-order relay conveys driving input (thick) from a subcortical
-  source to layer~4; the column processes it through its canonical
-  intracolumnar flow and returns two descending signals: a modulatory
-  layer-6 projection (thin grey) to the relays and the reticular nucleus
-  (TRN), which gates the relay (blue), and a driving layer-5 projection
-  to a higher-order relay, which drives layer~4 of a second cortical area
-  (the transthalamic route). Top-down feedback to the apical tufts in
-  layer~1 is drawn dashed, its driver/modulator class left open.
-  Connection classes follow \textcite{sherman1998, sherman2013}.}
+  The cortico-thalamo-cortical loop and the canonical cortical column, traced as
+  a numbered flow. \textbf{(1)}~A first-order relay receives driving input from a
+  subcortical source and \textbf{(2)}~drives layer~4. \textbf{(3--5)}~The column
+  processes it through the canonical intracolumnar flow (L4$\to$L2/3$\to$L5$\to$L6).
+  \textbf{(6--7)}~Layer~5 sends a driving projection to a higher-order relay, which
+  drives layer~4 of the next cortical area (the transthalamic route). In parallel,
+  layer~6 returns a modulatory projection (thin grey) to all relays, the reticular
+  nucleus (TRN) gates the relay (blue), and top-down feedback reaches the apical
+  tufts in layer~1 (dashed). Connection classes follow \textcite{sherman1998, sherman2013}.}
 \label{fig:bio-loop}
 \end{figure}
