@@ -1,15 +1,18 @@
 [0] Config.pm:328> INFO - This is Biber 2.21
 [0] Config.pm:331> INFO - Logfile is 'standalone.blg'
-[29] biber-darwin:342> INFO - === Fri Sep 25, 2026, 00:39:49
-[36] Biber.pm:421> INFO - Reading 'standalone.bcf'
-[70] Biber.pm:1002> INFO - Found 12 citekeys in bib section 0
-[76] Biber.pm:4487> INFO - Processing section 0
-[80] Biber.pm:4678> INFO - Looking for bibtex file 'bio.bib' for section 0
-[81] bibtex.pm:1713> INFO - LaTeX decoding ...
-[85] bibtex.pm:1519> INFO - Found BibTeX data source 'bio.bib'
-[124] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[124] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[124] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
-[124] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
-[127] bbl.pm:676> INFO - Writing 'standalone.bbl' with encoding 'UTF-8'
-[129] bbl.pm:779> INFO - Output to standalone.bbl
+[30] biber-darwin:342> INFO - === Fri Sep 25, 2026, 08:55:55
+[37] Biber.pm:421> INFO - Reading 'standalone.bcf'
+[72] Biber.pm:1002> INFO - Found 14 citekeys in bib section 0
+[79] Biber.pm:4487> INFO - Processing section 0
+[83] Biber.pm:4678> INFO - Looking for bibtex file 'bio.bib' for section 0
+[83] bibtex.pm:1713> INFO - LaTeX decoding ...
+[88] bibtex.pm:1519> INFO - Found BibTeX data source 'bio.bib'
+[128] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[128] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[128] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
+[128] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
+[131] bbl.pm:676> INFO - Writing 'standalone.bbl' with encoding 'UTF-8'
+[133] bbl.pm:779> INFO - Output to standalone.bbl
+[134] Biber.pm:132> WARN - I didn't find a database entry for 'sherman1998drivers' (section 0)
+[134] Biber.pm:132> WARN - I didn't find a database entry for 'sherman2013functional' (section 0)
+[134] Biber.pm:134> INFO - WARNINGS: 2
