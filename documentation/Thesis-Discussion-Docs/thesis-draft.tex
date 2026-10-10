@@ -1,0 +1,30 @@
+% Combined draft of the thesis chapters written so far.
+% Each chapter still lives in its own folder with its own standalone.tex
+% for per-issue previews; this file builds them together so that
+% cross-references, numbering and the bibliography can be checked as one.
+\documentclass[11pt,a4paper]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[american]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{csquotes}
+\usepackage{import}
+\usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
+\addbibresource{bio-foundation/bio.bib}
+\addbibresource{comp-foundation/comp.bib}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+
+\begin{document}
+
+\tableofcontents
+
+\import{bio-foundation/}{bio}
+\import{comp-foundation/}{comp}
+
+\printbibliography
+
+\end{document}
