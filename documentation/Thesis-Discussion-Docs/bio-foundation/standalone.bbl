@@ -265,6 +265,36 @@
       \field{title}{Functional Connections of Cortical Areas: A New View of the Thalamus}
       \field{year}{2013}
     \endentry
+    \entry{thomson2010layer6}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=21603330c65ac021e3245d3bfde80d13}{%
+           family={Thomson},
+           familyi={T\bibinitperiod},
+           given={Alex\bibnamedelima M.},
+           giveni={A\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{21603330c65ac021e3245d3bfde80d13}
+      \strng{fullhash}{21603330c65ac021e3245d3bfde80d13}
+      \strng{fullhashraw}{21603330c65ac021e3245d3bfde80d13}
+      \strng{bibnamehash}{21603330c65ac021e3245d3bfde80d13}
+      \strng{authorbibnamehash}{21603330c65ac021e3245d3bfde80d13}
+      \strng{authornamehash}{21603330c65ac021e3245d3bfde80d13}
+      \strng{authorfullhash}{21603330c65ac021e3245d3bfde80d13}
+      \strng{authorfullhashraw}{21603330c65ac021e3245d3bfde80d13}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Frontiers in Neuroanatomy}
+      \field{title}{Neocortical Layer 6, A Review}
+      \field{volume}{4}
+      \field{year}{2010}
+      \field{pages}{13}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3389/fnana.2010.00013
+      \endverb
+    \endentry
     \entry{larkum2013}{article}{}{}
       \name{author}{1}{}{%
         {{hash=db652d6e0af0251c94fcb9009bd5c160}{%
@@ -362,8 +392,8 @@
       \strng{authornamehash}{4fa46dede76e920fc23331c5d6a33f4d}
       \strng{authorfullhash}{922c4260810fcae1cda819b38a9d940f}
       \strng{authorfullhashraw}{922c4260810fcae1cda819b38a9d940f}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Neuron}
@@ -395,8 +425,8 @@
       \strng{authornamehash}{6d62141e600e5aa0b3d73503e2a75efb}
       \strng{authorfullhash}{6d62141e600e5aa0b3d73503e2a75efb}
       \strng{authorfullhashraw}{6d62141e600e5aa0b3d73503e2a75efb}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Science}
@@ -429,8 +459,8 @@
       \strng{authorfullhash}{0a7b5de305238d2bdf07042e4b2c55a1}
       \strng{authorfullhashraw}{0a7b5de305238d2bdf07042e4b2c55a1}
       \field{extraname}{3}
-      \field{sortinit}{4}
-      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Journal of Neurophysiology}
@@ -441,8 +471,6 @@
       \range{pages}{10}
     \endentry
   \enddatalist
-  \missing{sherman1998drivers}
-  \missing{sherman2013functional}
 \endrefsection
 \endinput
 

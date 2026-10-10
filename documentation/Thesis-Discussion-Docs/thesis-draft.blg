@@ -1,0 +1,18 @@
+[0] Config.pm:328> INFO - This is Biber 2.21
+[0] Config.pm:331> INFO - Logfile is 'thesis-draft.blg'
+[28] biber-darwin:342> INFO - === Sun Oct 11, 2026, 00:11:25
+[34] Biber.pm:421> INFO - Reading 'thesis-draft.bcf'
+[74] Biber.pm:1002> INFO - Found 47 citekeys in bib section 0
+[81] Biber.pm:4487> INFO - Processing section 0
+[85] Biber.pm:4678> INFO - Looking for bibtex file 'bio-foundation/bio.bib' for section 0
+[85] bibtex.pm:1713> INFO - LaTeX decoding ...
+[90] bibtex.pm:1519> INFO - Found BibTeX data source 'bio-foundation/bio.bib'
+[124] Biber.pm:4678> INFO - Looking for bibtex file 'comp-foundation/comp.bib' for section 0
+[125] bibtex.pm:1713> INFO - LaTeX decoding ...
+[137] bibtex.pm:1519> INFO - Found BibTeX data source 'comp-foundation/comp.bib'
+[241] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[241] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[241] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
+[242] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
+[253] bbl.pm:676> INFO - Writing 'thesis-draft.bbl' with encoding 'UTF-8'
+[263] bbl.pm:779> INFO - Output to thesis-draft.bbl
