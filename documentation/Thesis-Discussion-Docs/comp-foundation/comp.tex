@@ -1,49 +1,84 @@
+% Cross-chapter wording: the standalone build treats this as Chapter 2;
+% thesis-draft.tex redefines these macros when it nests it as Section 1.2.
+\providecommand{\unitname}{chapter}
+\providecommand{\bioref}{Chapter~1}
+\providecommand{\biosec}[2]{#1}
+\providecommand{\gapref}{Chapter~3}
 \chapter{Computational Foundation}
 \label{ch:comp}
 
 \section{Scope and Review Axes}
 \label{sec:comp-scope}
 
-Chapter~1 described the circuit: the laminar column, its excitatory and
-inhibitory cell classes, and the cortico-thalamo-cortical loop. This chapter
-reviews the computational side. It investigates how existing models represent
+\bioref{} described the circuit as a whole: the laminar column, its excitatory
+and inhibitory cell classes, and the cortico-thalamo-cortical loop. This
+\unitname{} turns to the computational side and asks how existing models represent
 cortical inhibition, sparse coding and associative memory, and what they have
-accomplished. The aim is not a catalogue. Each model is read for what it
-establishes and also for where it stops, so that the boundary of current work
-is visible when the gap is stated.
+accomplished. Rather than cataloguing these models, it reads each one for what
+it establishes and also for where it stops, so that the boundary of current
+work is visible when the gap is stated.
 
-Three axes structure the review. The first is the \emph{substrate}: the medium
-in which a model represents and computes. Candidates include binary sparse
-distributed representations over minicolumns with dendritic segments,
-rate-coded populations, spiking attractor networks, and multi-compartment
-neurons. The substrate matters because a mechanism shown in one medium does not
-automatically carry over to another. The second axis is the \emph{inhibition
-model}. Inhibition is either homogeneous, a single mechanism such as
-k-winners-take-all applied uniformly, or differentiated, with distinct
-interneuron classes that differ in target compartment, dynamics and arithmetic
-effect. The third axis is \emph{encoding versus retrieval}. It asks whether a
-model separates a mode in which new associations are stored from a mode in
-which stored associations are recalled, and what controls the switch.
+The review is organised along three axes, the first of which is the
+\emph{substrate}: the medium in which a model represents and computes.
+Candidates include binary sparse distributed representations over minicolumns
+with dendritic segments, rate-coded populations, spiking attractor networks,
+and multi-compartment neurons. The substrate matters because a mechanism shown
+in one medium does not automatically carry over to another. The second axis is
+the \emph{inhibition model}. Inhibition is either homogeneous, a single
+mechanism such as k-winners-take-all applied uniformly, or differentiated,
+with distinct interneuron classes that differ in target compartment, dynamics
+and arithmetic effect. The third axis is \emph{encoding versus retrieval}. It
+asks how a model relates the storage of new associations to the recall of
+stored ones, and what, if anything, decides between them.
 
-The third axis has a clear precedent outside neocortex. In the hippocampal
-model of Hasselmo et al.~\cite{hasselmo2002theta}, the theta rhythm alternates
-between two phases. In one, entorhinal input is strong and long-term
-potentiation is strong, but recurrent input from CA3 is weak, so new
+Because the thesis turns on these three terms, they are defined here.
+\emph{Encoding} is the process by which a new input pattern is turned into a
+stable representation and is stored, here through synaptic change.
+\emph{Retrieval} is the process by which a partial or noisy cue reactivates a
+stored representation. The two are not mutually exclusive: a network can
+retrieve while its synapses remain plastic, and encoding a new input usually
+involves matching it against what is already stored. \emph{Mode arbitration}
+is the mechanism that decides which of the two dominates at a given moment,
+for example by gating plasticity or by weighting external input against
+recurrent or feedback input. The third axis therefore asks less whether a
+model encodes and retrieves than whether it arbitrates between the two, and by
+what means.
+
+The third axis has a clear precedent outside the neocortex. In the hippocampal
+model of Hasselmo et al.~\cite{hasselmo2002theta}, the theta rhythm
+alternates between two phases. In one, entorhinal input is strong and
+long-term potentiation is strong, but recurrent input from CA3 is weak, so new
 associations are encoded without interference from old ones. In the other, the
 balance reverses and stored associations are retrieved. That separation is
-implemented by oscillatory and cholinergic modulation in hippocampus. Whether
-the interneuron circuitry of a neocortical column could implement a comparable
-arbitration is the question this review keeps in view.
+implemented by oscillatory and cholinergic modulation in the hippocampus.
 
-The chapter proceeds as follows. Section~\ref{sec:comp-htm} reviews the HTM
+Cutsuridis et al.~\cite{cutsuridis2010encoding} showed how interneuron classes
+could carry out this separation. Their biophysical model of the CA1 microcircuit
+contains pyramidal cells and four interneuron types. Basket and axo-axonic
+cells, the perisomatic and axon-targeting classes that in CA1 largely express
+PV, fire during the storage half of the theta cycle. Bistratified and oriens
+lacunosum-moleculare (OLM) cells, the latter expressing SST, fire during the
+recall half. During recall, OLM cells inhibit the distal dendrites on which
+entorhinal input arrives, protecting the recalled pattern from interfering
+input, while bistratified cells set the threshold for recall. Removing
+interneuron classes one at a time tested these roles: recall survived the loss
+of basket and axo-axonic inhibition, but degraded under interfering entorhinal
+input when OLM inhibition was removed. The interneurons divide the work of the
+two modes between them, but the phase that selects a mode is still set from
+outside the circuit, by septal input pacing the theta rhythm. Whether a
+neocortical column could divide encoding and retrieval between its interneuron
+classes in a comparable way is the question this review keeps in view.
+
+In the remainder of the \unitname{}, Section~\ref{sec:comp-htm} reviews the HTM
 tradition and its single model of inhibition. Section~\ref{sec:comp-assoc}
 covers associative extensions of that tradition, Sparse Distributed Memory and
 the Neural Association Algorithm. Section~\ref{sec:comp-interneuron} reviews
 circuit models that assign distinct roles to PV, SST and VIP interneurons.
 Section~\ref{sec:comp-attractor} reviews associative-memory columns in the
-attractor and BCPNN tradition. Section~\ref{sec:comp-operators} examines the two
-operator mechanisms at issue, divisive normalisation and dendritic arbitration.
-Section~\ref{sec:comp-synthesis} places all of these models on the three axes.
+attractor and BCPNN tradition. Section~\ref{sec:comp-operators} examines the
+two operator mechanisms at issue, divisive normalisation and dendritic
+arbitration. Section~\ref{sec:comp-synthesis} places all of these models on
+the three axes.
 
 \section{The HTM, CLA and SDR Tradition}
 \label{sec:comp-htm}
@@ -60,16 +95,16 @@ on. It is equally significant for what it leaves out.
 
 A sparse distributed representation (SDR) is a large binary vector in which
 only a small fraction of bits are active at any time, typically a few percent.
-Ahmad and Hawkins~\cite{ahmad2015sdr} derived the properties that make SDRs
-suitable for cortical computation, concerning their scaling, robustness and
+Ahmad and Hawkins~\cite{ahmad2015sdr} derived properties that make SDRs
+suitable for cortical computation, focusing on scaling, robustness, and
 generalisation. The overlap between two SDRs measures their similarity. The
 probability that two unrelated SDRs share many active bits falls rapidly as
 dimensionality grows, so a pattern can be recognised reliably by sampling only
 a small subset of its active bits. The same property lets a set of SDRs be
 stored as their union and still be matched with a low false-positive rate.
 Ahmad and Hawkins~\cite{ahmad2016sdr} later linked these properties to
-dendritic segments: a segment that detects a coincidence among a small sample
-of active inputs behaves as a robust pattern detector over SDRs.
+dendritic segments, showing that a segment which detects a coincidence among a
+small sample of active inputs behaves as a robust pattern detector over SDRs.
 
 \subsection{The Spatial Pooler}
 \label{subsec:comp-sp}
@@ -101,12 +136,12 @@ after which learned SDRs remain stable.
 
 Hawkins and Ahmad~\cite{hawkins2016neurons} extended the HTM neuron with three
 integration zones. The proximal zone receives feedforward input and drives
-action potentials. The basal zone receives contextual input, mostly from nearby
-cells in the same region. The apical zone receives feedback. Each dendritic
-segment acts as an independent pattern detector, so a single neuron can
-recognise hundreds of distinct patterns. A match on a basal or apical segment
-does not fire the cell. It depolarises the cell slightly, putting it in a
-predictive state.
+action potentials. The basal zone receives contextual input, mostly from
+nearby cells in the same region, and the apical zone receives feedback. Each
+dendritic segment acts as an independent pattern detector, so a single neuron
+can recognise hundreds of distinct patterns. A match on a basal or apical
+segment does not fire the cell. It depolarises the cell slightly, putting it
+in a predictive state.
 
 The Temporal Memory (TM) network uses this predictive state for sequence
 learning. All cells in a minicolumn share the feedforward receptive field
@@ -135,45 +170,51 @@ through context-modulated dendritic segments and enforced k-winners-take-all
 sparsity, and the combination reduced catastrophic forgetting across
 sequentially learned tasks.
 
-The same property has a consequence for the third review axis. Because learning
-is always on, an HTM network stores and recalls in a single pass. It has no
-state in which input is recalled without being learned, and no state in which
-input is learned without being matched against what is already stored. The
-lineage contains no mechanism comparable to the encoding and retrieval phases
-described in Section~\ref{sec:comp-scope}.
+The same property bears on the third review axis, though less directly than it
+might seem. Continuous learning does not make encoding and retrieval
+inseparable. Temporal Memory retrieves, in the sense of predicting the next
+element from stored sequences, while its synapses remain plastic, and each new
+input is matched against stored segments as it is learned. Plasticity is
+applied on every cycle, and nothing in the network decides that a given input
+should be stored rather than only recalled, or the reverse. In the terms of
+Section~\ref{sec:comp-scope}, HTM encodes and retrieves, but does not
+arbitrate between the two.
 
 \subsection{Inhibition in the HTM Lineage}
 \label{subsec:comp-htm-inhibition}
 
 Across the Spatial Pooler, Temporal Memory and their continual-learning
-extensions, inhibition is a single operation: rank the candidates and keep the
-top $k$, applied either globally or within a neighbourhood. It has no cell
-identity, no target compartment and no dynamics. Its arithmetic effect is
-fixed: it caps the active population at $k$ and depends only on the ranking of
-inputs, not on how strong they are. The only route to a smaller population is
-the separate stimulus threshold, which is not part of the inhibition.
-Inhibition also does not act separately on the apical zone, even though the HTM
-neuron has one, so it offers no means of weighing feedback against feedforward
-drive.
+extensions, inhibition is a single operation that ranks the candidates and
+keeps the top $k$, applied either globally or within a neighbourhood. It
+has no cell identity, no target compartment and no dynamics. Its effect is set
+by rank rather than by strength: strict kWTA imposes an upper bound of
+$k$ on the active population and selects among candidates by their
+ordering, not by how strongly they are driven. Fewer than $k$ units can
+be active when eligibility rules intervene, such as the stimulus threshold or
+a local neighbourhood with few candidates, but these limits come from the
+eligibility criteria, not from the inhibition itself. Inhibition also does not
+act separately on the apical zone, even though the HTM neuron has one, so it
+offers no means of weighing feedback against feedforward drive.
 
 This is a modelling choice, not a claim about biology, and the authors' own
 discussions point to more structure than the algorithms use. Hawkins and
 Ahmad~\cite{hawkins2016neurons} propose fast-spiking basket cells as the most
 likely source of the rapid inhibition that TM depends on. These are the
-parvalbumin-expressing perisomatic cells described in Section~1.3. Cui et
+parvalbumin-expressing perisomatic cells described in Section~\biosec{1.3}{sec:bio-inhibitory}. Cui et
 al.~\cite{cui2017sp} note that the cortex contains many distinct classes of
 inhibitory neurons and suggest that classes innervating cells within a
 minicolumn, such as bipolar and double bouquet cells, may help define it. The
 lineage therefore attributes its inhibition to specific and differing cell
 types in biology, but implements a single homogeneous rule in computation.
 
-Two questions follow. First, whether replacing k-winners-take-all with a
-PV-like divisive operator changes behaviour that kWTA fixes by construction,
-namely assembly size and the possibility of complete suppression. Second,
-whether adding an SST-like dendritic operator gives the network a handle on
-feedback that it currently lacks. Section~\ref{sec:comp-operators} examines
-both mechanisms. On the three axes, the HTM tradition provides the substrate, a
-homogeneous inhibition model, and no separation of encoding from retrieval.
+This contrast with the biological circuit raises two questions for the present
+work. The first is whether replacing k-winners-take-all with a PV-like
+divisive operator changes how assembly size is set, from an upper bound
+imposed by rank to a recruitment that depends on input magnitude, and under
+what conditions it can suppress the population entirely. The second, taken up
+together with the first in Section~\ref{sec:comp-operators}, is whether adding
+an SST-like dendritic operator gives the network a handle on feedback that it
+currently lacks.
 
 \section{Associative Extensions}
 \label{sec:comp-assoc}
@@ -203,54 +244,54 @@ converges to the stored word when the cue lies close enough to it. Storing each
 item at the address of its predecessor turns the same mechanism into a sequence
 memory. Kanerva related the architecture to the circuitry of the cerebellum.
 
-SDM matters to this review in three ways. First, its hard locations play a role
-similar to the minicolumns of the Spatial Pooler: both map an input onto a
-sparse set of units chosen by similarity. They differ in how that set is
-chosen. The SDM addresses are fixed and random rather than learned, and the
+SDM matters to this review in three ways. First, its hard locations play a
+role similar to the minicolumns of the Spatial Pooler, as both map an input
+onto a sparse set of units chosen by similarity. They differ in how that set
+is chosen. The SDM addresses are fixed and random rather than learned, and the
 active set is every location inside a radius, so its size varies with the cue.
-The Spatial Pooler learns its receptive fields but caps the active set at
-exactly $k$. SDM therefore needs no inhibition to stay sparse, and its active
-population is free to grow or shrink, which is the property that kWTA removes
-(Section~\ref{subsec:comp-htm-inhibition}). Second, SDM separates writing from
-reading cleanly, as two distinct operations. That separation is imposed from
-outside, however: the caller decides whether a cycle writes or reads, and
-nothing in the memory makes that decision. Third, SDM is an abstract memory and
-not a model of cortical tissue. It has no minicolumns, dendrites or laminae, so
-it says nothing about how a cortical circuit might implement either its
-selection rule or its write and read modes.
+The Spatial Pooler learns its receptive fields but bounds the active set at
+$k$ by rank. SDM therefore needs no inhibition to stay sparse, and its
+active population grows or shrinks with the cue, a property that rank-based
+selection does not provide (Section~\ref{subsec:comp-htm-inhibition}). Second,
+SDM separates writing from reading cleanly, as two distinct operations. That
+arbitration is imposed from outside, however: the caller decides whether a
+cycle writes or reads, and nothing in the memory makes that decision. Third,
+SDM is an abstract memory and not a model of cortical tissue. It has no
+minicolumns, dendrites or laminae, so it says nothing about how a cortical
+circuit might implement either its selection rule or its write and read modes.
 
 A note on terminology is needed here. The title of this thesis describes its
 model as a laminar sparse-distributed memory column. The term is used in its
 descriptive sense: a cortical column that stores and recalls associations over
-sparse distributed representations. The column is built on the HTM substrate of
-Section~\ref{sec:comp-htm}, not on Kanerva's architecture of random hard
+sparse distributed representations. The column is built on the HTM substrate
+of Section~\ref{sec:comp-htm}, not on Kanerva's architecture of random hard
 locations and counters. The two share the principle that makes such memories
-robust, namely storage distributed across many sparsely active units. Kanerva's
-model is reviewed here because it is the original statement of that principle,
-and because it makes explicit two properties that the HTM lineage lacks: an
-active set whose size varies with the input, and a separation of writing from
-reading.
+robust, namely storage distributed across many sparsely active units.
+Kanerva's model is reviewed here because it is the original statement of that
+principle, and because it makes explicit two properties that the HTM lineage
+lacks: an active set whose size varies with the input, and an explicit choice
+between writing and reading.
 
 \subsection{The Neural Association Algorithm}
 \label{subsec:comp-naa}
 
 The Neural Association Algorithm (NAA) extends HTM from a single region to a
 cortical space of many areas, each running the same
-algorithm~\cite{dobric2024naa}. In each area an encoder, usually the Spatial
+algorithm~\cite{dobric2024naa}. In each area, an encoder, usually the Spatial
 Pooler, produces an SDR. An association function then maps the active cells of
-any area onto a sparse set of active cells in a target area. NAA uses the three
-segment types of the HTM neuron for this. Proximal segments connect to sensory
-input, distal (basal) segments connect to cells of other minicolumns in the
-same area, and apical segments connect to cells in other areas. Each segment is
-active or matching, depending on how many connected synapses it has relative to
-two thresholds. NAA distinguishes two kinds of context. A spatial context is an
-undirected association between two SDRs, such as a song and the place where it
-was heard. A temporal context, by contrast, is a directed association, created
-when one state follows another. Learning happens only inside active
-minicolumns. There, synapses from active cells onto active segments are
-strengthened and new synapses are grown, while synapses onto matching segments
-in inactive minicolumns are weakened. Alongside the association model, the work
-introduces the newborn stage of the Spatial Pooler
+any area onto a sparse set of active cells in a target area. NAA uses the
+three segment types of the HTM neuron for this. Proximal segments connect to
+sensory input, distal (basal) segments connect to cells of other minicolumns
+in the same area, and apical segments connect to cells in other areas. Each
+segment is active or matching, depending on how many connected synapses it has
+relative to two thresholds. NAA distinguishes two kinds of context: a spatial
+context is an undirected association between two SDRs, such as a song and the
+place where it was heard, whereas a temporal context is a directed
+association, created when one state follows another. Learning happens only
+inside active minicolumns, where synapses from active cells onto active
+segments are strengthened and new synapses are grown, while synapses onto
+matching segments in inactive minicolumns are weakened. Alongside the
+association model, the work introduces the newborn stage of the Spatial Pooler
 (Section~\ref{subsec:comp-sp}) and a parallel implementation of minicolumn
 computation based on the actor programming model.
 
@@ -275,19 +316,15 @@ the single-area core of NAA is implemented. The apical segments that would link
 areas, and with them any channel for feedback, are part of the model but not
 yet of the implementation~\cite[Sec.~9.5.1.1]{dobric2024naa}.
 
-On the three axes, NAA provides the SDR substrate extended toward association,
-a homogeneous inhibition model that its author explicitly leaves open, and no
-circuit-level separation of encoding from retrieval. These open items are
-deliberate simplifications of a framework built for scale, not oversights.
-Section~\ref{sec:comp-synthesis} returns to them as the point at which this
-thesis begins.
+Its homogeneous inhibition, which the author explicitly leaves open, is a
+deliberate simplification of a framework built for scale, not an oversight.
 
 \section{Interneuron-Resolved Circuit Models}
 \label{sec:comp-interneuron}
 
 Alongside the HTM tradition, a separate body of work models cortical inhibition
 at the level of interneuron classes. These models take the connectivity
-described in Section~1.3 as their starting point. PV cells inhibit the
+described in Section~\biosec{1.3}{sec:bio-inhibitory} as their starting point. PV cells inhibit the
 perisomatic region of pyramidal cells, SST cells inhibit their dendrites, and
 VIP cells inhibit SST cells and so release the dendrites from inhibition. The
 models then ask what this division of labour computes. They are reviewed here in
@@ -353,38 +390,36 @@ emerge when inhibition must be specific to compartments.
 \paragraph{Laminar models.}
 At the largest scale, Billeh et al.~\cite{billeh2020systematic} integrated
 anatomical and physiological data into models of mouse primary visual cortex
-spanning all layers, with about 230{,}000 neurons in 17 cell classes. The model
+spanning all layers, with about 230,000 neurons in 17 cell classes. The model
 exists in a biophysically detailed version and a point-neuron version with
 identical connectivity, and both were compared against recordings from awake
-mice. Moreni et al.~\cite{moreni2025celltype} built a smaller model at the scale
-of a single column, drawing its connectivity from the same data. Their network
-of 5{,}000 leaky integrate-and-fire neurons has pyramidal, PV, SST and VIP
-populations in layers 2/3, 4, 5 and 6, and VIP cells alone in layer 1. They
-compared two input regimes. Feedforward input to layer 4 produced net
-excitation of the column, whereas feedback-like input to layer 5 produced net
-inhibition, which the authors attribute to translaminar gain control through
-column-wide inhibition from layer 6 (see Section~1.4). The response to
-perturbing any single cell group also depended on the state of the column:
-strong feedforward input made the column less sensitive to every perturbation,
-while feedback input modulated interactions within it. How the column treats
-its inputs therefore depends on whether it is driven from below or from above,
-which bears directly on the arbitration question of this thesis. Like Billeh et
-al., however, the model has no synaptic plasticity and performs no memory task.
-Laminar models of this kind show that interneuron detail across layers can be
-assembled and constrained by data. Their question is how the circuit responds in
-different states, not what it stores or retrieves.
+mice. Moreni et al.~\cite{moreni2025celltype} built a smaller model at the
+scale of a single column, drawing its connectivity from the same data. Their
+network of 5,000 leaky integrate-and-fire neurons has pyramidal, PV, SST and
+VIP populations in layers 2/3, 4, 5 and 6, and VIP cells alone in layer 1.
+Comparing two input regimes, they found that feedforward input to layer 4
+produced net excitation of the column, whereas feedback-like input to layer 5
+produced net inhibition, which the authors attribute to translaminar gain
+control through column-wide inhibition from layer 6 (see Section~\biosec{1.4}{sec:bio-canonical}). The
+response to perturbing any single cell group also depended on the state of the
+column: strong feedforward input made the column less sensitive to every
+perturbation, while feedback input modulated interactions within it. How the
+column treats its inputs therefore depends on whether it is driven from below
+or from above, which bears directly on the arbitration question of this
+thesis. Like Billeh et al., however, the model has no synaptic plasticity and
+performs no memory task. Laminar models of this kind show that interneuron
+detail across layers can be assembled and constrained by data. Their question
+is how the circuit responds in different states, not what it stores or
+retrieves.
 
-\paragraph{Where these models stop.}
-On the inhibition axis, these models provide what the HTM tradition lacks:
-distinct interneuron classes with distinct targets and dynamics, and analyses
-of what each contributes. On the other two axes they stop short. Their substrate
-is rate-coded or spiking populations, with no sparse distributed
-representations, no minicolumns and no learned assemblies. Their questions are
-gating, modulation, error signalling and physiological fidelity. None of them
-stores a set of patterns and then recalls one from a partial cue, so none can
-ask whether PV and SST contribute differently to encoding and to retrieval. The
-models supply the mechanisms that this thesis transfers, but not the memory task
-or the substrate in which it is tested.
+These models provide what the HTM tradition lacks on the inhibition axis. They
+assign distinct targets and dynamics to interneuron classes and analyse what
+each class contributes. On the other two axes, however, they offer much less.
+Their substrate is rate-coded or spiking populations, with no sparse
+distributed representations, no minicolumns and no learned assemblies, and
+their questions concern gating, modulation, error signalling and physiological
+fidelity. None of the models reviewed here stores a set of patterns and then
+recalls one from a partial cue.
 
 \section{Associative-Memory Columns}
 \label{sec:comp-attractor}
@@ -457,24 +492,21 @@ into a plastic disynaptic pathway. Basket cells continued to provide
 non-specific feedback inhibition, and the network's learning and memory
 function were preserved.
 
-\paragraph{Where these models stop.}
-This tradition comes closest to the present thesis on two of the three axes. It
-studies associative memory directly, and it has already shown that
-differentiated interneurons matter inside a memory network. The roles it
-assigns them are specific, however: basket cells implement competition between
-minicolumns, Martinotti cells control how long an attractor lasts and suppress
-its surround, and double bouquet cells make learned inhibition compatible with
-Dale's principle. None of these models asks whether one interneuron class
-governs the storage of new patterns and another their recall. Where the mode of
-the network does change, as in the sustained activity of Fransén and Lansner, the
-switch is neuromodulatory. The substrate also differs. These are spiking networks
-whose memories are assemblies of minicolumns selected by soft
+Of the traditions reviewed, this one comes closest to the present thesis, on
+two of the three axes. It studies associative memory directly, and it has
+already shown that differentiated interneurons matter inside a memory network.
+The roles it assigns them are narrow, however. Basket cells implement
+competition between minicolumns, Martinotti cells control how long an
+attractor lasts and suppress its surround, and double bouquet cells make
+learned inhibition compatible with Dale's principle. Where the network does
+change mode, as in the sustained activity reported by Fransén and Lansner, the
+switch is neuromodulatory. The substrate also differs, since these are spiking
+networks whose memories are assemblies of minicolumns selected by soft
 winner-take-all competition, not learned SDRs over dendritic segments, and in
-the earliest models the stored patterns were wired in rather than learned. What
-interneuron-differentiated inhibition would add to this tradition is therefore
-not the presence of several interneuron classes, which it already has, but a
-test of whether PV-like and SST-like inhibition divide the work of encoding and
-retrieval between them.
+the earliest models the stored patterns were wired in rather than learned.
+What interneuron-differentiated inhibition could add to this tradition is
+therefore not several classes, which it already has, but a division of
+encoding and retrieval between them.
 
 \section{Two Operator Mechanisms}
 \label{sec:comp-operators}
@@ -508,16 +540,21 @@ implementation: different circuits, regions or species may compute it with
 different components.
 
 For this thesis the contrast with k-winners-take-all is the important point.
-kWTA acts on the rank of inputs and fixes the number of active units at $k$.
-Normalisation acts on their magnitude: each response is scaled relative to the
-activity of the pool, and the ordering of inputs is preserved. Combined with a
-firing threshold, the number of units that remain active is then free to depend
-on the input, and when the pool is strongly driven every unit can in principle
-fall below threshold. Variable assembly size and reachable complete suppression
-are exactly the two properties that kWTA excludes by construction
-(Section~\ref{subsec:comp-htm-inhibition}), and whether a PV-like normalising
-operator restores them in an SDR column is the first question this thesis
-tests.
+Strict kWTA acts on the rank of inputs and imposes an upper bound on the
+number of active units. Normalisation acts on their magnitude: each response
+is scaled relative to the activity of the pool, and the ordering of inputs is
+preserved. Combined with a firing threshold, normalisation can therefore
+produce input-dependent recruitment, in which the number of active units
+follows the strength and distribution of the input rather than a bound set by
+rank. It does not, by itself, silence the population. If every drive in Equation~\ref{eq:normalisation} is multiplied by the same factor, each response approaches a
+fixed fraction of $\gamma$ rather than zero, so a proportional increase in input does
+not drive the responses toward zero. Whether a normalising operator can
+suppress every unit depends on the size of the pool, the distribution of drive
+across it and the position of the threshold. In this thesis, complete
+suppression is therefore treated as a property of the proposed implementation
+to be tested, not as a general consequence of divisive normalisation.
+Input-dependent recruitment is the first property examined when a PV-like
+normalising operator replaces kWTA in an SDR column.
 
 The attribution of division to PV cells, however, is not settled.
 Wilson et al.~\cite{wilson2012division} activated and suppressed PV and
@@ -542,7 +579,7 @@ integration can turn subtractive inhibition of single neurons into divisive
 inhibition of the population, or the reverse.
 
 This evidence fixes how the operators are used in this thesis. As stated in
-Section~1.3, the synaptic targeting of PV and SST cells is robust, while the
+Section~\biosec{1.3}{sec:bio-inhibitory}, the synaptic targeting of PV and SST cells is robust, while the
 assignment of a fixed arithmetic operation to each class is not. The thesis
 therefore treats ``PV as divisive normalisation'' and ``SST as dendritic
 gating'' as operator hypotheses: modelling choices motivated by targeting and
@@ -590,109 +627,89 @@ disinhibitory gating of Yang et al.~\cite{yang2016gating}
 inhibition as the natural candidate for deciding how much feedback a pyramidal
 cell integrates.
 
-\paragraph{Where these mechanisms stop.}
-Both operators are well developed, but neither has been placed in the setting of
-this thesis. Normalisation is defined independently of any circuit, its
-attribution to PV cells is contested, and it has not been tested as a
-replacement for kWTA in an SDR column. Apical arbitration is established at the
-level of single cells and of circuits for gating and learning, but the questions
-asked of it are coincidence detection, pathway selection and credit assignment
-in supervised learning. In Sacramento et al.\ the SST-like interneurons cancel
-predictable feedback so that errors can drive learning. They do not decide
-whether the network stores a new pattern or recalls a stored one, and the
-model's explicit aim of avoiding separate phases is the opposite of the
-encoding and retrieval separation examined here. Whether a dendritic operator of
-this kind, placed in an SDR column alongside a normalising one, can arbitrate
-between feedforward encoding and feedback-driven retrieval remains open.
+Both operators are well developed in their own settings, but neither has yet
+been carried into the memory setting this thesis addresses. Normalisation is
+defined independently of any circuit, and its attribution to PV cells is
+contested. Apical arbitration is established at the level of single cells and
+of circuits for gating and learning, but the questions asked of it are
+coincidence detection, pathway selection and credit assignment in supervised
+learning. In Sacramento et al., the SST-like interneurons cancel predictable
+feedback so that errors can drive learning. They do not decide whether the
+network stores a new pattern or recalls a stored one, and the model's explicit
+aim of avoiding separate phases is the opposite of the mode arbitration
+examined here.
 
 \section{Synthesis: Relation to Prior Work}
 \label{sec:comp-synthesis}
 
-Table~\ref{tab:comp-prior-work} places the models reviewed in this chapter on the
+Table~\ref{tab:comp-prior-work} places the models reviewed in this \unitname{} on the
 three axes introduced in Section~\ref{sec:comp-scope}. Read by rows, it shows
 that each tradition is strong on one or two axes and silent on the rest. Read by
-columns, it shows where the empty cell lies.
+columns, it shows how each axis is covered.
 
 The HTM tradition and its associative extension supply the substrate. Sparse
 distributed representations over minicolumns with dendritic segments, learned
 continuously by local rules, are what the present model is built from. Their
-inhibition, however, is a single homogeneous k-winners-take-all rule, which the
-authors of the lineage themselves describe as a simplification
-(Sections~\ref{subsec:comp-htm-inhibition} and~\ref{subsec:comp-naa}), and
-learning is always on, so encoding and retrieval are never separated. The
-interneuron-resolved circuit models supply the opposite. They give PV, SST and
-VIP cells distinct targets, dynamics and roles, but in rate-coded or spiking
-populations without sparse distributed representations, and in tasks of
-gating, modulation, error signalling and physiological fidelity rather than
-memory. The attractor and BCPNN tradition comes closest from a third
-direction. It studies associative memory in cortical columns and already
-includes several interneuron classes, but the roles it assigns them are
-competition, attractor dwell time, surround suppression and compliance with
-Dale's principle. The two operator mechanisms, divisive normalisation and
-dendritic arbitration, are each well established, yet neither has been tested
-as a replacement for kWTA in an SDR column, and the assignment of each to a
-single interneuron class remains contested.
+inhibition, however, is a single homogeneous k-winners-take-all rule, which
+the authors of the lineage themselves describe as a simplification
+(Sections~\ref{subsec:comp-htm-inhibition} and~\ref{subsec:comp-naa}). The interneuron-resolved circuit models
+supply the opposite. They give PV, SST and VIP cells distinct targets,
+dynamics and roles, but in rate-coded or spiking populations without sparse
+distributed representations, and in tasks of gating, modulation, error
+signalling and physiological fidelity rather than memory. The attractor and
+BCPNN tradition comes closest from a third direction. It studies associative
+memory in cortical columns and already includes several interneuron classes,
+but the roles it assigns them are competition, attractor dwell time, surround
+suppression and compliance with Dale's principle. The two operator mechanisms,
+divisive normalisation and dendritic arbitration, are each well established,
+but outside the memory setting, and the assignment of each to a single
+interneuron class remains contested.
 
-The encoding and retrieval column of the table is the most telling. Where a
-model separates the two at all, the switch lies outside the inhibitory circuit.
-In Sparse Distributed Memory the caller decides whether a cycle writes or reads.
-In the hippocampal model of Hasselmo et al.\ and in the cortical model of
-Fransén and Lansner the change of mode comes from neuromodulation. The one
-interneuron model with a persistent switch between modes, that of Hertäg and
-Sprekeler, applies it to the processing of feedback, not to the storage and
-recall of patterns. Sacramento et al.\ go further in the other direction and
-design their circuit so that no separate phases are needed.
-
-The gap that follows from this review has three parts, and no existing model
-combines them: a discrete SDR substrate in the HTM tradition; inhibition
-resolved into two operator-distinct interneuron types, a PV-like divisive
-normalisation and an SST-like dendritic gate; and an explicit test of whether
-these two operators contribute differently to encoding and to retrieval. The
-contribution claimed here is correspondingly narrow. It is not a new account of
-cortical inhibition, but the transfer of an established biological distinction
-into a substrate that has so far lacked it, together with a test of whether the
-transfer has a functional consequence that homogeneous kWTA cannot produce.
+These observations are drawn together into the research gap in \gapref{}.
 
 \begin{table}[htbp]
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.0}
-\begin{tabular}{>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{1.8cm}}
+\renewcommand{\arraystretch}{0.88}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{2.1cm}}
 \hline
-\textbf{Model} & \textbf{Substrate} & \textbf{Inhibition model} & \textbf{Question tested} & \textbf{Encoding vs.\ retrieval} \\
+\textbf{Model} & \textbf{Substrate} & \textbf{Inhibition model} & \textbf{Question tested} & \textbf{Encoding/\allowbreak retrieval control} \\
+\hline
+\multicolumn{5}{l}{\emph{Hippocampal precedent (Section~\ref{sec:comp-scope})}} \\
+Cutsuridis et al.~\cite{cutsuridis2010encoding} & Biophysical spiking CA1 microcircuit & Basket, axo-axonic, bistratified, OLM & Storage and recall across theta & External (septal theta) \\
 \hline
 \multicolumn{5}{l}{\emph{HTM, CLA and SDR tradition (Section~\ref{sec:comp-htm})}} \\
-Spatial Pooler, Temporal Memory~\cite{cui2017sp,hawkins2016neurons} & Binary SDRs, minicolumns, dendritic segments & Homogeneous kWTA, global or local & Sparse coding, sequence learning & Not separated \\
-Iyer et al.~\cite{iyer2022dendrites} & Deep network with dendritic segments & Homogeneous kWTA & Continual multi-task learning & Not separated \\
+Spatial Pooler, Temporal Memory~\cite{cui2017sp,hawkins2016neurons} & Binary SDRs, minicolumns, dendritic segments & Homogeneous kWTA, global or local & Sparse coding, sequence learning & Absent \\
+Iyer et al.~\cite{iyer2022dendrites} & Deep network with dendritic segments & Homogeneous kWTA & Continual multi-task learning & Absent \\
 \hline
 \multicolumn{5}{l}{\emph{Associative extensions (Section~\ref{sec:comp-assoc})}} \\
-SDM~\cite{kanerva1988sdm} & Abstract binary memory & None; radius selection & Storage and noisy recall & Separate, set by caller \\
-NAA~\cite{dobric2024naa} & HTM-derived SDRs, multiple areas & kWTA algorithm, no inhibitory cells & Association, SP stability & Not separated \\
+SDM~\cite{kanerva1988sdm} & Abstract binary memory & None; radius selection & Storage and noisy recall & External (caller) \\
+NAA~\cite{dobric2024naa} & HTM-derived SDRs, multiple areas & kWTA algorithm, no inhibitory cells & Association, SP stability & Absent \\
 \hline
 \multicolumn{5}{l}{\emph{Interneuron-resolved circuit models (Section~\ref{sec:comp-interneuron})}} \\
-Yang et al.~\cite{yang2016gating} & Rate, multi-compartment pyramidal cell & PV, SST, VIP & Pathway-specific gating & Not addressed \\
-Hertäg and Sprekeler~\cite{hertag2019amplifying} & Rate, two-compartment pyramidal cell & PV, SST, VIP & Somato-dendritic redistribution & Mode switch for feedback only \\
-Garcia del Molino et al.~\cite{garciadelmolino2017paradoxical} & Rate populations & PV, SST, VIP & Response reversal & Not addressed \\
-Hertäg and Sprekeler~\cite{hertag2020prediction} & Rate, plastic interneurons & PV, SST, VIP & Prediction-error learning & Not addressed \\
-Keijser and Sprekeler~\cite{keijser2022optimizing} & Spiking, optimised circuit & Emergent PV- and SST-like classes & Compartment-specific inhibition & Not addressed \\
-Billeh et al.~\cite{billeh2020systematic} & Spiking laminar V1, 230{,}000 cells & 17 data-driven cell classes & Physiological fidelity & Not addressed \\
-Moreni et al.~\cite{moreni2025celltype} & Spiking laminar column & PV, SST, VIP per layer & Feedforward vs.\ feedback states & Not addressed \\
+Yang et al.~\cite{yang2016gating} & Rate, multi-compartment pyramidal cell & PV, SST, VIP & Pathway-specific gating & Absent \\
+Hertäg and Sprekeler~\cite{hertag2019amplifying} & Rate, two-compartment pyramidal cell & PV, SST, VIP & Somato-dendritic redistribution & Circuit-internal, feedback mode only \\
+Garcia del Molino et al.~\cite{garciadelmolino2017paradoxical} & Rate populations & PV, SST, VIP & Response reversal & Absent \\
+Hertäg and Sprekeler~\cite{hertag2020prediction} & Rate, plastic interneurons & PV, SST, VIP & Prediction-error learning & Absent \\
+Keijser and Sprekeler~\cite{keijser2022optimizing} & Spiking, optimised circuit & Emergent PV- and SST-like classes & Compartment-specific inhibition & Absent \\
+Billeh et al.~\cite{billeh2020systematic} & Spiking laminar V1, 230{,}000 cells & 17 data-driven cell classes & Physiological fidelity & Absent \\
+Moreni et al.~\cite{moreni2025celltype} & Spiking laminar column & PV, SST, VIP per layer & Feedforward vs.\ feedback states & Absent \\
 \hline
 \multicolumn{5}{l}{\emph{Associative-memory columns (Section~\ref{sec:comp-attractor})}} \\
-Fransén and Lansner~\cite{fransen1998horizontal} & Biophysical spiking columns & Basket cells & Completion, rivalry & Retrieval only; neuromodulatory mode \\
-Lundqvist et al.~\cite{lundqvist2006attractor} & Spiking hyper- and minicolumns & Basket soft WTA, RSNP cells & Attractor dynamics & Retrieval only \\
-Krishnamurthy et al.~\cite{krishnamurthy2012cortical,krishnamurthy2015longrange} & Spiking attractor network & Basket, Martinotti (VIP in 2015) & Dwell time, surround suppression & Retrieval only \\
-Chrysanthidis et al.~\cite{chrysanthidis2019introducing} & Spiking BCPNN network & Basket, double bouquet & Learned inhibition, Dale's principle & Not arbitrated by interneurons \\
+Fransén and Lansner~\cite{fransen1998horizontal} & Biophysical spiking columns & Basket cells & Completion, rivalry & Neuro\-modulatory \\
+Lundqvist et al.~\cite{lundqvist2006attractor} & Spiking hyper- and minicolumns & Basket soft WTA, RSNP cells & Attractor dynamics & Absent \\
+Krishnamurthy et al.~\cite{krishnamurthy2012cortical,krishnamurthy2015longrange} & Spiking attractor network & Basket, Martinotti (VIP in 2015) & Dwell time, surround suppression & Absent \\
+Chrysanthidis et al.~\cite{chrysanthidis2019introducing} & Spiking BCPNN network & Basket, double bouquet & Learned inhibition, Dale's principle & Absent \\
 \hline
 \multicolumn{5}{l}{\emph{Operator mechanisms (Section~\ref{sec:comp-operators})}} \\
-Normalisation~\cite{carandini2012normalization} & Circuit-independent & Divisive & Canonical computation & Not addressed \\
-Sacramento et al.~\cite{sacramento2018dendritic} & Rate, multi-compartment network & SST-like apical prediction & Supervised credit assignment & Single phase by design \\
+Normalisation~\cite{carandini2012normalization} & Circuit-independent & Divisive & Canonical computation & Absent \\
+Sacramento et al.~\cite{sacramento2018dendritic} & Rate, multi-compartment network & SST-like apical prediction & Supervised credit assignment & Absent \\
 \hline
-\textbf{This thesis} & \textbf{SDR laminar column} & \textbf{PV-like divisive, SST-like dendritic} & \textbf{Encoding vs.\ retrieval dissociation} & \textbf{Tested} \\
+\textbf{This thesis} & \textbf{SDR laminar column} & \textbf{PV-like divisive, SST-like dendritic} & \textbf{Encoding vs.\ retrieval dissociation} & \textbf{External; PV/SST division tested} \\
 \hline
 \end{tabular}
 \caption{Relation of this thesis to prior work on the three review axes:
-substrate, inhibition model, and whether encoding and retrieval are separated.}
+substrate, inhibition model, and how encoding and retrieval are arbitrated.}
 \label{tab:comp-prior-work}
 \end{table}

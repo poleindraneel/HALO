@@ -1,36 +1,43 @@
 \babel@toc {american}{}\relax 
-\contentsline {chapter}{\numberline {1}Biological Foundation}{2}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Laminar organization of the neocortex}{3}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Excitatory principal neurons}{4}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Inhibitory interneurons}{5}{section.1.3}%
-\contentsline {section}{\numberline {1.4}The canonical intracolumnar microcircuit}{7}{section.1.4}%
-\contentsline {section}{\numberline {1.5}The thalamus: relay, drivers and modulators, and gating}{11}{section.1.5}%
-\contentsline {section}{\numberline {1.6}The cortico-thalamo-cortical loop}{12}{section.1.6}%
-\contentsline {section}{\numberline {1.7}Integrative circuit diagram}{14}{section.1.7}%
-\contentsline {chapter}{\numberline {2}Computational Foundation}{16}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Scope and Review Axes}{16}{section.2.1}%
-\contentsline {section}{\numberline {2.2}The HTM, CLA and SDR Tradition}{17}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Sparse Distributed Representations}{17}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}The Spatial Pooler}{17}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}Temporal Memory and Active Dendrites}{18}{subsection.2.2.3}%
-\contentsline {subsection}{\numberline {2.2.4}Continual Unsupervised Learning}{18}{subsection.2.2.4}%
-\contentsline {subsection}{\numberline {2.2.5}Inhibition in the HTM Lineage}{19}{subsection.2.2.5}%
-\contentsline {section}{\numberline {2.3}Associative Extensions}{19}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}Sparse Distributed Memory}{20}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}The Neural Association Algorithm}{21}{subsection.2.3.2}%
-\contentsline {section}{\numberline {2.4}Interneuron-Resolved Circuit Models}{22}{section.2.4}%
-\contentsline {paragraph}{Disinhibitory gating.}{22}{section*.2}%
-\contentsline {paragraph}{State-dependent responses.}{23}{section*.3}%
-\contentsline {paragraph}{Learning and optimisation.}{23}{section*.4}%
-\contentsline {paragraph}{Laminar models.}{23}{section*.5}%
-\contentsline {paragraph}{Where these models stop.}{24}{section*.6}%
-\contentsline {section}{\numberline {2.5}Associative-Memory Columns}{24}{section.2.5}%
-\contentsline {paragraph}{Columns as memory units.}{24}{section*.7}%
-\contentsline {paragraph}{Modular attractor networks.}{25}{section*.8}%
-\contentsline {paragraph}{Differentiated interneurons in memory columns.}{25}{section*.9}%
-\contentsline {paragraph}{Where these models stop.}{26}{section*.10}%
-\contentsline {section}{\numberline {2.6}Two Operator Mechanisms}{26}{section.2.6}%
-\contentsline {subsection}{\numberline {2.6.1}Divisive Normalisation}{26}{subsection.2.6.1}%
-\contentsline {subsection}{\numberline {2.6.2}Dendritic and Apical Arbitration}{28}{subsection.2.6.2}%
-\contentsline {paragraph}{Where these mechanisms stop.}{28}{section*.11}%
-\contentsline {section}{\numberline {2.7}Synthesis: Relation to Prior Work}{29}{section.2.7}%
+\contentsline {chapter}{\numberline {1}Literature Review}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Biological Foundation}{2}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Laminar organization of the neocortex}{3}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Excitatory principal neurons}{4}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Inhibitory interneurons}{5}{subsection.1.1.3}%
+\contentsline {subsection}{\numberline {1.1.4}The canonical intracolumnar microcircuit}{8}{subsection.1.1.4}%
+\contentsline {subsection}{\numberline {1.1.5}The thalamus: relay, drivers and modulators, and gating}{11}{subsection.1.1.5}%
+\contentsline {subsection}{\numberline {1.1.6}The cortico-thalamo-cortical loop}{12}{subsection.1.1.6}%
+\contentsline {subsection}{\numberline {1.1.7}Integrative circuit diagram}{14}{subsection.1.1.7}%
+\contentsline {section}{\numberline {1.2}Computational Foundation}{16}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Scope and Review Axes}{16}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}The HTM, CLA and SDR Tradition}{17}{subsection.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.2.1}Sparse Distributed Representations}{17}{subsubsection.1.2.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2.2}The Spatial Pooler}{17}{subsubsection.1.2.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.2.3}Temporal Memory and Active Dendrites}{18}{subsubsection.1.2.2.3}%
+\contentsline {subsubsection}{\numberline {1.2.2.4}Continual Unsupervised Learning}{18}{subsubsection.1.2.2.4}%
+\contentsline {subsubsection}{\numberline {1.2.2.5}Inhibition in the HTM Lineage}{19}{subsubsection.1.2.2.5}%
+\contentsline {subsection}{\numberline {1.2.3}Associative Extensions}{20}{subsection.1.2.3}%
+\contentsline {subsubsection}{\numberline {1.2.3.1}Sparse Distributed Memory}{20}{subsubsection.1.2.3.1}%
+\contentsline {subsubsection}{\numberline {1.2.3.2}The Neural Association Algorithm}{21}{subsubsection.1.2.3.2}%
+\contentsline {subsection}{\numberline {1.2.4}Interneuron-Resolved Circuit Models}{22}{subsection.1.2.4}%
+\contentsline {subparagraph}{Disinhibitory gating.}{22}{section*.2}%
+\contentsline {subparagraph}{State-dependent responses.}{23}{section*.3}%
+\contentsline {subparagraph}{Learning and optimisation.}{23}{section*.4}%
+\contentsline {subparagraph}{Laminar models.}{23}{section*.5}%
+\contentsline {subsection}{\numberline {1.2.5}Associative-Memory Columns}{24}{subsection.1.2.5}%
+\contentsline {subparagraph}{Columns as memory units.}{24}{section*.6}%
+\contentsline {subparagraph}{Modular attractor networks.}{25}{section*.7}%
+\contentsline {subparagraph}{Differentiated interneurons in memory columns.}{25}{section*.8}%
+\contentsline {subsection}{\numberline {1.2.6}Two Operator Mechanisms}{26}{subsection.1.2.6}%
+\contentsline {subsubsection}{\numberline {1.2.6.1}Divisive Normalisation}{26}{subsubsection.1.2.6.1}%
+\contentsline {subsubsection}{\numberline {1.2.6.2}Dendritic and Apical Arbitration}{27}{subsubsection.1.2.6.2}%
+\contentsline {subsection}{\numberline {1.2.7}Synthesis: Relation to Prior Work}{29}{subsection.1.2.7}%
+\contentsline {section}{\numberline {1.3}Research Gap}{31}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}What Is Established}{31}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}What Remains Open}{32}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Anticipated Objections}{33}{subsection.1.3.3}%
+\contentsline {subparagraph}{PV and SST have already been dissociated.}{33}{section*.9}%
+\contentsline {subparagraph}{Interneuron classes have already been studied in memory networks.}{33}{section*.10}%
+\contentsline {subparagraph}{The mechanisms are borrowed rather than discovered.}{33}{section*.11}%
+\contentsline {subparagraph}{PV is not purely divisive and SST is not purely subtractive.}{33}{section*.12}%
+\contentsline {subparagraph}{The HTM tradition already names its inhibitory cells.}{33}{section*.13}%

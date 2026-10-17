@@ -2528,6 +2528,34 @@
     <bcf:citekey order="127" intorder="1">chrysanthidis2019introducing</bcf:citekey>
     <bcf:citekey order="128" intorder="1">carandini2012normalization</bcf:citekey>
     <bcf:citekey order="129" intorder="1">sacramento2018dendritic</bcf:citekey>
+    <bcf:citekey order="130" intorder="1">tremblay2016</bcf:citekey>
+    <bcf:citekey order="131" intorder="1">yang2016gating</bcf:citekey>
+    <bcf:citekey order="131" intorder="2">hertag2019amplifying</bcf:citekey>
+    <bcf:citekey order="132" intorder="1">billeh2020systematic</bcf:citekey>
+    <bcf:citekey order="132" intorder="2">moreni2025celltype</bcf:citekey>
+    <bcf:citekey order="133" intorder="1">carandini2012normalization</bcf:citekey>
+    <bcf:citekey order="134" intorder="1">wilson2012division</bcf:citekey>
+    <bcf:citekey order="135" intorder="1">larkum1999new</bcf:citekey>
+    <bcf:citekey order="135" intorder="2">larkum2013</bcf:citekey>
+    <bcf:citekey order="135" intorder="3">murayama2009dendritic</bcf:citekey>
+    <bcf:citekey order="136" intorder="1">urbanczik2014learning</bcf:citekey>
+    <bcf:citekey order="136" intorder="2">sacramento2018dendritic</bcf:citekey>
+    <bcf:citekey order="137" intorder="1">krishnamurthy2012cortical</bcf:citekey>
+    <bcf:citekey order="137" intorder="2">chrysanthidis2019introducing</bcf:citekey>
+    <bcf:citekey order="138" intorder="1">ahmad2016sdr</bcf:citekey>
+    <bcf:citekey order="138" intorder="2">hawkins2016neurons</bcf:citekey>
+    <bcf:citekey order="138" intorder="3">cui2017sp</bcf:citekey>
+    <bcf:citekey order="139" intorder="1">hasselmo2002theta</bcf:citekey>
+    <bcf:citekey order="140" intorder="1">hertag2019amplifying</bcf:citekey>
+    <bcf:citekey order="141" intorder="1">krishnamurthy2012cortical</bcf:citekey>
+    <bcf:citekey order="141" intorder="2">krishnamurthy2015longrange</bcf:citekey>
+    <bcf:citekey order="142" intorder="1">fransen1998horizontal</bcf:citekey>
+    <bcf:citekey order="143" intorder="1">elboustani2014response</bcf:citekey>
+    <bcf:citekey order="143" intorder="2">seybold2015</bcf:citekey>
+    <bcf:citekey order="144" intorder="1">lee2012activation</bcf:citekey>
+    <bcf:citekey order="144" intorder="2">atallah2012parvalbumin</bcf:citekey>
+    <bcf:citekey order="145" intorder="1">hawkins2016neurons</bcf:citekey>
+    <bcf:citekey order="146" intorder="1">dobric2024naa</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

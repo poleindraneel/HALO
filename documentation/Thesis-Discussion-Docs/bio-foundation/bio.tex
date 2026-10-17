@@ -1,9 +1,10 @@
 % !TEX root = standalone.tex
 \usetikzlibrary{arrows.meta}
+\providecommand{\unitname}{chapter}
 \chapter{Biological Foundation}
 \label{chap:bio}
 
-This chapter is the biological foundation of the circuit that the model developed in this thesis follows: the neocortical microcircuit 
+This \unitname{} is the biological foundation of the circuit that the model developed in this thesis follows: the neocortical microcircuit 
 and the cortico-thalamo-cortical loop in which it is integrated. The account is canonical rather than exhaustive: it describes the 
 organization that recurs across cortical areas rather than the full quantitative detail of any one, and it is drawn principally from 
 sensory neocortex, where the underlying anatomy and physiology are most fully characterized. It rests on a small set of established 
@@ -11,7 +12,7 @@ sources: \textcite{white1989} and the \emph{Handbook of Brain Microcircuits} \pa
 \textcite{douglas1989, douglas2004} for the canonical microcircuit, \textcite{rudy2011} for the inhibitory cell classes, 
 \textcite{sherman1998, sherman2013} for the thalamus and its cortical connections, and \textcite{thomson2010layer6} for the internal organization of layer 6.
 
-The chapter is deliberately confined to biology described on its own terms. It identifies the layers, cell types, and connections of 
+The \unitname{} is deliberately confined to biology described on its own terms. It identifies the layers, cell types, and connections of 
 the circuit, the direction and character of the information flow through it, and the distinct roles of its inhibitory and thalamic 
 elements, but it does not map any of these onto components of the computational model. That correspondence is deferred to the bridge 
 chapter. The separation is methodological, not presentational: the biology must stand as an independent description if the model is 
@@ -23,7 +24,7 @@ enter only where they bear directly on the circuit's operation, for instance in 
 canonical picture has since been refined or contested, this is noted rather than absorbed, so that the account remains anchored to 
 the framework the rest of the thesis depends on.
 
-The chapter proceeds from structure to circuit to loop: the laminar organization of the neocortex (Section~\ref{sec:bio-laminar}), 
+The \unitname{} proceeds from structure to circuit to loop: the laminar organization of the neocortex (Section~\ref{sec:bio-laminar}), 
 its excitatory principal neurons (Section~\ref{sec:bio-excitatory}) and inhibitory interneurons (Section~\ref{sec:bio-inhibitory}), 
 the canonical intracolumnar microcircuit that links them (Section~\ref{sec:bio-canonical}), the thalamus and its relay and gating 
 apparatus (Section~\ref{sec:bio-thalamus}), and the cortico-thalamo-cortical loop that binds cortex and thalamus into one processing 
@@ -61,7 +62,7 @@ and, critically for this thesis, close the loop with the thalamus.
 
 This horizontal lamination is only one axis of cortical organization. Cutting across it is the vertical, or radial, dimension: the 
 apical dendrites of pyramidal cells and the predominantly vertical interlaminar axons bind neurons across all six layers into the 
-columnar unit that was taken as the object of description at the outset of this chapter. Lamination specifies what each layer is and where 
+columnar unit that was taken as the object of description at the outset of this \unitname{}. Lamination specifies what each layer is and where 
 it sits; the directed flow of activity between the layers, which constitutes the canonical microcircuit, is the subject of Section~\ref{sec:bio-canonical}, 
 after the cell types that populate the layers have been introduced in Sections~\ref{sec:bio-excitatory} and~\ref{sec:bio-inhibitory}.
 
@@ -119,7 +120,7 @@ homogeneous population: they fall into a small number of largely non-overlapping
 Three molecularly defined classes account for nearly the entire interneuron population: cells expressing parvalbumin 
 (PV, roughly 40\%), cells expressing somatostatin (SST, roughly 30\%), and cells expressing the ionotropic serotonin receptor 
 5HT3aR (roughly 30\%) \parencite{rudy2011}. The three classes are essentially non-overlapping, and together they exhaust the 
-inhibitory population to a first approximation. The four components named in the scope of this chapter (PV, SST, VIP, and the interneurons of layer 1) map onto this scheme as follows: PV and SST are the first two classes, while VIP cells and the layer-1 
+inhibitory population to a first approximation. The four components named in the scope of this \unitname{} (PV, SST, VIP, and the interneurons of layer 1) map onto this scheme as follows: PV and SST are the first two classes, while VIP cells and the layer-1 
 interneurons are two functionally distinct subgroups of the third, the 5HT3aR class, as set out below.
 
 PV cells are fast-spiking and target the perisomatic region of the pyramidal cell: the two morphological types are the basket cells, 
@@ -145,15 +146,15 @@ The resulting division of the pyramidal cell among the four inhibitory component
    \begin{figure}[htbp]
      \centering
      \includegraphics[width=0.85\textwidth]{fig-interneurons}
-     \caption{Compartment-specific inhibition of a single pyramidal cell. PV cells inhibit the perisomatic output compartment, with basket cells acting at the soma and proximal dendrites and chandelier cells at the axon initial segment (AIS); there they control the gain and timing of spike output. SST Martinotti cells send an ascending axon into layer~1 and inhibit the apical tuft, the input compartment on which top-down feedback arrives. VIP cells inhibit SST cells and, more weakly, PV cells (dashed); when long-range or neuromodulatory input activates VIP cells, the tuft is released from SST inhibition (the VIP~$\rightarrow$~SST~$\rightarrow$~pyramidal disinhibitory motif). Neurogliaform cells in layer~1 add slow, diffuse inhibition of the tuft by volume transmission (dotted). Feedforward input arrives on the basal dendrites near the soma. Targeting follows \textcite{tremblay2016}.}
+     \caption{Compartment-specific inhibition of a single pyramidal cell. PV cells, shown as two separate types, inhibit the perisomatic output compartment, with basket cells acting at the soma and proximal dendrites and chandelier cells at the axon initial segment (AIS); there they control the gain and timing of spike output. SST Martinotti cells send an ascending axon into layer~1 and inhibit the apical tuft, the input compartment on which top-down feedback arrives. VIP cells inhibit SST cells and, more weakly, PV cells (dashed); when long-range or neuromodulatory input activates VIP cells, the tuft is released from SST inhibition (the VIP~$\rightarrow$~SST~$\rightarrow$~pyramidal disinhibitory motif). Neurogliaform cells in layer~1 add slow, diffuse inhibition of the tuft by volume transmission (dotted). Ascending feedforward excitation, arriving directly from the thalamus or relayed through layer~4, reaches the basal dendrites near the soma. Targeting follows \textcite{tremblay2016}.}
      \label{fig:interneurons}
    \end{figure}
 
-A caution is needed on what this compartmental division of labour does and does not establish. The synaptic targeting itself, PV to the perisomatic region and SST to the distal dendrites, is robust and is the property this chapter relies on. The further step of assigning 
+A caution is needed on what this compartmental division of labour does and does not establish. The synaptic targeting itself, PV to the perisomatic region and SST to the distal dendrites, is robust and is the property this \unitname{} relies on. The further step of assigning 
 each class a fixed arithmetic operation on the pyramidal cell's input-output function, PV acting divisively and SST subtractively, 
 is often made but is not settled: activating either class has been shown to produce mixtures of divisive and subtractive effects, and 
 threshold nonlinearities interacting with recurrent network activity can convert subtractive inhibition of single neurons into divisive
- inhibition at the network level, or the reverse \parencite{seybold2015}. This chapter therefore characterizes the interneuron classes
+ inhibition at the network level, or the reverse \parencite{seybold2015}. This \unitname{} therefore characterizes the interneuron classes
   by their synaptic targeting and their consequent control of the output versus the input compartment, and does not commit to a fixed 
   arithmetic label; the computational interpretation of these operations is taken up where the model is introduced.
 
@@ -196,7 +197,7 @@ incomplete: deep-layer neurons receive sensory-evoked input directly from the th
 when layer 4 is silenced, so that the thalamus drives an upper (L4, L2/3) and a lower (L5/6) stratum in parallel rather than purely in 
 series \parencite{constantinople2013}. Second, quantitative and optogenetic studies have refined several of the interlaminar projections
  of the template, including the targets of the layer-6 projection and the contribution of translaminar inhibition, beyond the resolution
-  of the original abstraction. This chapter adopts the canonical microcircuit as the backbone description of intracolumnar flow because 
+  of the original abstraction. This \unitname{} adopts the canonical microcircuit as the backbone description of intracolumnar flow because 
   it remains the shared framework the thesis depends on, while treating these refinements as established qualifications to it rather 
   than replacing the backbone with them.
 
@@ -291,14 +292,14 @@ distinct kinds: layer 6, through corticothalamic cells that have combined the co
 adjusting the gain and mode of that relay for what follows; and layer 5 sends a driving projection to a higher-order relay, which 
 transmits the column's output onward to the next area, where the same operations repeat. Ascending drive and descending modulation 
 are thus carried by anatomically and kinetically separate pathways, and every passage through the thalamus, in either direction, is gated. This separation of driving from modulatory signaling, running in both directions around a thalamo-cortical loop, is the central 
-architectural feature of the biology this chapter has described.
+architectural feature of the biology this \unitname{} has described.
 
 The whole of this circuit, comprising its layers and cells, the direction and class of each connection, and the two gated directions of the loop, is summarized in the integrative diagram of Section~\ref{sec:bio-diagram}.
 
 \section{Integrative circuit diagram}
 \label{sec:bio-diagram}
 
-Figure~\ref{fig:circuit} brings the elements of this chapter together in a single diagram. It traces the driving signal through the thalamus and the column as a numbered sequence, distinguishes driving connections from modulatory ones and from the inhibitory gate of the TRN, and shows layer 6 resolved into its corticothalamic and corticocortical populations (Section~\ref{sec:bio-canonical}). The figure is the reference circuit on which the rest of the thesis draws.
+Figure~\ref{fig:circuit} brings the elements of this \unitname{} together in a single diagram. It traces the driving signal through the thalamus and the column as a numbered sequence, distinguishes driving connections from modulatory ones and from the inhibitory gate of the TRN, and shows layer 6 resolved into its corticothalamic and corticocortical populations (Section~\ref{sec:bio-canonical}). The figure is the reference circuit on which the rest of the thesis draws.
 
 \begin{figure}[htbp]
      \centering

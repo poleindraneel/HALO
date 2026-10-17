@@ -36,39 +36,41 @@
   \filldraw[fill=blue!12, draw=black, line width=1pt] (-0.5,0) -- (0.5,0) -- (0,1.0) -- cycle;
   \node[lbl, anchor=west] at (0.6,0.6) {pyramidal\\cell};
   \node[lbl, anchor=west] at (0.12,-0.42) {AIS};
-  \node[lbl, anchor=north] at (0,-1.45) {output};
+  \node[lbl, anchor=east] at (-0.1,-1.3) {output};
 
   % ---- Interneurons ----
-  \node[cell, draw=pvcol,  fill=pvcol!12]  (pv)  at (-3.2,0.4) {PV};
+  \node[cell, draw=pvcol,  fill=pvcol!12]  (pvb) at (-3.2,1.3)  {PV};
+  \node[cell, draw=pvcol,  fill=pvcol!12]  (pvc) at (-3.2,-1.2) {PV};
   \node[cell, draw=sstcol, fill=sstcol!12] (sst) at (4.0,2.4)  {SST};
   \node[cell, draw=vipcol, fill=vipcol!12] (vip) at (4.0,-2.4) {VIP};
   \node[cell, draw=ngfcol, fill=ngfcol!12] (ngf) at (-3.2,7.5) {NGF};
-  \node[lbl, anchor=south, text=pvcol]  at (pv.north)  {basket /\\chandelier};
+  \node[lbl, anchor=south, text=pvcol]  at (pvb.north) {basket};
+  \node[lbl, anchor=north, text=pvcol]  at (pvc.south) {chandelier};
   \node[lbl, anchor=west,  text=sstcol] at (sst.east)  {Martinotti};
   \node[lbl, anchor=north, text=ngfcol] at (ngf.south) {neurogliaform};
 
   % ---- Inhibitory connections ----
-  \draw[inh, pvcol]      (pv.east) -- (-0.32,0.4);                     % PV basket -> soma
-  \draw[inh, pvcol]      (pv.-40) -- (-1.9,-1.0) -- (-0.1,-0.45);      % PV chandelier -> AIS
+  \draw[inh, pvcol]      (pvb.east) -- (-1.2,1.3) -- (-0.32,0.4);      % PV basket -> soma
+  \draw[inh, pvcol]      (pvc.east) -- (-1.2,-1.2) -- (-0.1,-0.45);    % PV chandelier -> AIS
   \draw[inh, sstcol]     (sst.north) -- (4.0,7.5) -- (0.8,7.5);        % SST -> apical tuft
   \draw[inh, vipcol]     (vip.north) -- (sst.south);                   % VIP -> SST
-  \draw[weak, vipcol]    (vip.west) -| (pv.-115);                      % VIP -> PV (weaker)
+  \draw[weak, vipcol]    (vip.west) -- (-4.1,-2.4) -- (-4.1,1.3) -- (pvb.west); % VIP -> PV basket (weaker)
   \draw[diffuse, ngfcol] (ngf.east) -- (-0.8,7.5);                     % NGF -> tuft (volume)
 
   % ---- Excitatory inputs ----
   \draw[exc] (0,9.4) -- (0,8.2);
   \node[lbl, anchor=south] at (0,9.4) {top-down feedback\\(higher cortical area)};
-  \draw[exc] (2.3,-1.15) -- (1.38,-0.63);
-  \node[lbl, anchor=north] at (2.3,-1.2) {feedforward\\(thalamus / L4)};
+  \draw[exc] (2.0,-1.15) -- (1.38,-0.63);
+  \node[lbl, anchor=north] at (1.75,-1.2) {ascending feedforward\\excitation (direct\\thalamic or L4-mediated)};
     \draw[exc] (6.4,-2.4) -- (vip.east);
   \node[lbl, anchor=north] at (6.4,-2.5) {long-range /\\neuromodulatory};
 
   % ---- Compartment braces ----
   \draw[decorate, decoration={brace, amplitude=5pt}, line width=0.7pt]
-      (-4.4,-0.9) -- (-4.4,1.2)
+      (-4.6,-0.9) -- (-4.6,1.2)
       node[midway, left=7pt, lbl, align=right] {perisomatic:\\output\\compartment};
   \draw[decorate, decoration={brace, amplitude=5pt}, line width=0.7pt]
-      (-4.4,6.75) -- (-4.4,8.3)
+      (-4.6,6.75) -- (-4.6,8.3)
       node[midway, left=7pt, lbl, align=right] {apical tuft:\\input\\compartment};
 
   % ---- Legend ----

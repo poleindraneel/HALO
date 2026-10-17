@@ -1,7 +1,11 @@
 % Combined draft of the thesis chapters written so far.
-% Each chapter still lives in its own folder with its own standalone.tex
+% Each part still lives in its own folder with its own standalone.tex
 % for per-issue previews; this file builds them together so that
 % cross-references, numbering and the bibliography can be checked as one.
+%
+% Here the biological and computational foundations are nested as sections of
+% a single Literature Review chapter, so every sectioning command in bio.tex
+% and comp.tex is shifted down one level while they are imported.
 \documentclass[11pt,a4paper]{report}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -12,18 +16,55 @@
 \usepackage{tikz}
 \usepackage{csquotes}
 \usepackage{import}
+\usepackage{placeins}  % \FloatBarrier: keep each foundation's floats inside it
 \usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
 \addbibresource{bio-foundation/bio.bib}
 \addbibresource{comp-foundation/comp.bib}
 \usepackage{hyperref}
 \hypersetup{hidelinks}
 
+\setcounter{secnumdepth}{3}  % number the 1.x.y.z level
+\setcounter{tocdepth}{2}     % contents: chapter, foundations, their sections
+
+% Wording macros used inside bio.tex and comp.tex
+\newcommand{\unitname}{section}
+\newcommand{\bioref}{Section~\ref{chap:bio}}
+\newcommand{\biosec}[2]{\ref{#2}}
+\newcommand{\xsec}[2]{\ref{#2}}
+\newcommand{\gapref}{Section~\ref{chap:gap}}
+\newcommand{\aimref}{Section~\ref{chap:aims}}
+
+% Shift sectioning down one level for the imported foundations
+\let\LRchapter\chapter
+\let\LRsection\section
+\let\LRsubsection\subsection
+\let\LRsubsubsection\subsubsection
+\let\LRparagraph\paragraph
+\newcommand{\shiftsections}{%
+  \let\chapter\LRsection
+  \let\section\LRsubsection
+  \let\subsection\LRsubsubsection
+  \let\subsubsection\LRparagraph
+  \let\paragraph\subparagraph}
+
 \begin{document}
 
 \tableofcontents
 
+\chapter{Literature Review}
+\label{chap:litreview}
+
+\begingroup
+\shiftsections
 \import{bio-foundation/}{bio}
+\FloatBarrier
 \import{comp-foundation/}{comp}
+\FloatBarrier
+\import{gap-analysis/}{gap}
+\FloatBarrier
+\import{aims-hypotheses/}{aims}
+\FloatBarrier
+\endgroup
 
 \printbibliography
 
